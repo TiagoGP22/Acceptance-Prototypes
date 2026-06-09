@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MOTO App Self-Service</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  body { background: #e8e8e3; }
+  @keyframes slideInRight { from { transform: translateX(100%) } to { transform: translateX(0) } }
+  @keyframes slideInLeft { from { transform: translateX(-100%) } to { transform: translateX(0) } }
+  @keyframes bellPulse { 0% { transform: scale(1); } 30% { transform: scale(1.25); } 60% { transform: scale(0.95); } 100% { transform: scale(1); } }
+  @keyframes badgePop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes skeletonShimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
+  input:focus { border-color: rgba(9,8,6,.4) !important; }
+</style>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ═══════════════════════════════════════════════════════════════
+   MOTO App Self-Service
+   Lemonade DS
+   ═══════════════════════════════════════════════════════════════ */
+
+// ── Design Tokens (Lemonade DS) ──────────────────────────────
+const T = {
+  font: "'Figtree', 'SF Pro Text', -apple-system, sans-serif",
+  color: {
+    primary: "rgba(9,8,6,0.93)",
+    secondary: "rgba(22,20,14,0.55)",
+    tertiary: "rgba(33,28,18,0.4)",
+    bgSubtle: "#f6f5f3",
+    bgDefault: "#ffffff",
+    bgElevated: "rgba(95,79,48,0.05)",
+    borderMed: "rgba(143,134,118,0.2)",
+    borderLight: "rgba(143,134,118,0.1)",
+    positive: "#5ea500",
+    positiveBg: "rgba(94,165,0,0.1)",
+    warning: "#e07800",
+    warningBg: "rgba(224,120,0,0.1)",
+    negative: "#d93025",
+    negativeBg: "rgba(217,48,37,0.1)",
+    info: "#1565c0",
+    infoBg: "#e3f2fd",
+    accent: "#3d3d00",
+    oliveGrad: "linear-gradient(180deg, #e8e4a0 0%, #f6f5f3 100%)",
+    bannerGrad: "linear-gradient(135deg, #f5f3d0, #e8e4a0)",
+  },
+  radius: { xs: 6, sm: 8, md: 12, lg: 16, xl: 24, full: 999 },
+};
+
+// ── SVG Icons ────────────────────────────────────────────────
+const I = {
+  back: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  close: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  chev: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  more: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="10" r="1.5" fill="currentColor"/><circle cx="10" cy="10" r="1.5" fill="currentColor"/><circle cx="16" cy="10" r="1.5" fill="currentColor"/></svg>,
+  terminal: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" strokeWidth="1.4"/><line x1="3" y1="12" x2="17" y2="12" stroke="currentColor" strokeWidth="1.4"/><circle cx="10" cy="15" r="1" fill="currentColor"/><rect x="6" y="5" width="8" height="5" rx="1" stroke="currentColor" strokeWidth="1"/></svg>,
+  box: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L17 6V14L10 18L3 14V6L10 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M10 18V10M10 10L3 6M10 10L17 6" stroke="currentColor" strokeWidth="1.4"/></svg>,
+  gear: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.4"/><path d="M10 1.5V4M10 16V18.5M18.5 10H16M4 10H1.5M16 4L14.1 5.9M5.9 14.1L4 16M16 16L14.1 14.1M5.9 5.9L4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  swap: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 7H16M16 7L13 4M16 7L13 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 13H4M4 13L7 10M4 13L7 16" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  lock: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="9" width="12" height="8" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M7 9V6C7 4.34 8.34 3 10 3C11.66 3 13 4.34 13 6V9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><circle cx="10" cy="13" r="1.5" fill="currentColor"/></svg>,
+  user: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.4"/><path d="M3 17.5C3 14.46 5.69 12 10 12C14.31 12 17 14.46 17 17.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  bell: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2C7.24 2 5 4.24 5 7V11L3 14H17L15 11V7C15 4.24 12.76 2 10 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M8 14V15C8 16.1 8.9 17 10 17C11.1 17 12 16.1 12 15V14" stroke="currentColor" strokeWidth="1.4"/></svg>,
+  shield: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L3 5V10C3 14.42 6 17.5 10 18.5C14 17.5 17 14.42 17 10V5L10 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
+  bank: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L2 7H18L10 2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><rect x="4" y="9" width="2" height="6" stroke="currentColor" strokeWidth="1.2"/><rect x="9" y="9" width="2" height="6" stroke="currentColor" strokeWidth="1.2"/><rect x="14" y="9" width="2" height="6" stroke="currentColor" strokeWidth="1.2"/><line x1="2" y1="17" x2="18" y2="17" stroke="currentColor" strokeWidth="1.4"/></svg>,
+  edit: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M11.5 2.5L13.5 4.5L5 13H3V11L11.5 2.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
+  check: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  home: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 8L10 2L17 8V17H12V12H8V17H3V8Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
+  sales: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="13" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M2 9H18" stroke="currentColor" strokeWidth="1.4"/><path d="M6 13H9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  money: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.4"/><circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.4"/></svg>,
+  search: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="5" stroke="currentColor" strokeWidth="1.4"/><path d="M12.5 12.5L17 17" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  deactivate: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.4"/><path d="M7 10H13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  key: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="7" cy="8" r="3" stroke="currentColor" strokeWidth="1.4"/><path d="M10 8H17M14 8V11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  sliders: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5H17M3 10H17M3 15H17" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><circle cx="7" cy="5" r="2" fill="white" stroke="currentColor" strokeWidth="1.3"/><circle cx="13" cy="10" r="2" fill="white" stroke="currentColor" strokeWidth="1.3"/><circle cx="9" cy="15" r="2" fill="white" stroke="currentColor" strokeWidth="1.3"/></svg>,
+  globe: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.4"/><path d="M3 10H17M10 3C12 5.5 12 14.5 10 17M10 3C8 5.5 8 14.5 10 17" stroke="currentColor" strokeWidth="1.2"/></svg>,
+  phone: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="5" y="1" width="10" height="18" rx="2" stroke="currentColor" strokeWidth="1.4"/><circle cx="10" cy="16" r="1" fill="currentColor"/></svg>,
+  food: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10C3 6.13 6.13 3 10 3C13.87 3 17 6.13 17 10" stroke="currentColor" strokeWidth="1.4"/><path d="M2 11H18V12C18 15.31 15.31 18 12 18H8C4.69 18 2 15.31 2 12V11Z" stroke="currentColor" strokeWidth="1.4"/><path d="M10 3V1M7 4L6 2M13 4L14 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+  plus: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4V16M4 10H16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  copy: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M3 11V3.5C3 3.22 3.22 3 3.5 3H11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+  store: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 8L4 3H16L17 8" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M3 8V17H17V8" stroke="currentColor" strokeWidth="1.4"/><rect x="7" y="12" width="6" height="5" stroke="currentColor" strokeWidth="1.2"/></svg>,
+  dropdown: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  upload: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 14V4M10 4L7 7M10 4L13 7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 13V16C3 16.55 3.45 17 4 17H16C16.55 17 17 16.55 17 16V13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  doc: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 2H12L16 6V17C16 17.55 15.55 18 15 18H5C4.45 18 4 17.55 4 17V3C4 2.45 4.45 2 5 2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M12 2V6H16" stroke="currentColor" strokeWidth="1.3"/><path d="M7 10H13M7 13H11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>,
+  clock: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.4"/><path d="M10 6V10L13 12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  diamond: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L18 10L10 18L2 10L10 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/></svg>,
+  cart: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 3H5L5.4 5M5.4 5H17L15 11H7M5.4 5L7 11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><circle cx="8" cy="15" r="1.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="14" cy="15" r="1.5" stroke="currentColor" strokeWidth="1.3"/></svg>,
+  link: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M8 12L12 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M10.5 14.5L8.5 16.5C7.4 17.6 5.6 17.6 4.5 16.5L3.5 15.5C2.4 14.4 2.4 12.6 3.5 11.5L5.5 9.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M9.5 5.5L11.5 3.5C12.6 2.4 14.4 2.4 15.5 3.5L16.5 4.5C17.6 5.6 17.6 7.4 16.5 8.5L14.5 10.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  image: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="currentColor" strokeWidth="1.4"/><circle cx="7" cy="8" r="2" stroke="currentColor" strokeWidth="1.2"/><path d="M2 14L6 10L10 14L14 9L18 13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  eye: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" strokeWidth="1.4"/><circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.4"/></svg>,
+};
+
+// ── Data ─────────────────────────────────────────────────────
+const STORES = ["Camden Corner", "Waterloo Way"];
+const ALL_STORES = [
+  { id: "camden", name: "Camden Corner", type: "physical", address: "42 Camden High St, London NW1 0JH", shortId: "STR-4821", activity: "Caf\u00e9 & Coffee Shop", email: "camden@coffeebrain.co.uk", phone: "+44 20 7946 0321", mcc: "5812" },
+  { id: "waterloo", name: "Waterloo Way", type: "physical", address: "18 Waterloo Rd, London SE1 8TP", shortId: "STR-4822", activity: "Caf\u00e9 & Coffee Shop", email: "waterloo@coffeebrain.co.uk", phone: "+44 20 7946 0322", mcc: "5812" },
+  { id: "online", name: "Online Shop", type: "ecommerce", address: "coffeebrain.co.uk", shortId: "STR-4823", activity: "E-commerce \u2013 Food & Beverage", email: "shop@coffeebrain.co.uk", phone: "+44 20 7946 0300", mcc: "5499", privacyUrl: "https://coffeebrain.co.uk/privacy", termsUrl: "https://coffeebrain.co.uk/terms", heading: "CoffeeBrain Online", subheading: "Premium coffee, delivered to your door" },
+];
+const INIT_TERMINALS = [
+  { id: 1, name: "Front Counter", model: "Teya Move", serial: "SN-4821-A", store: "Camden Corner", status: "active", cost: 19, nextBill: "1 Apr 2026", activated: "12 Jan 2025", plan: "Teya Growth", pairingCode: null, overrides: null },
+  { id: 2, name: "Back Office", model: "Teya Go", serial: "SN-7734-C", store: "Camden Corner", status: "delivered", cost: 15, nextBill: "\u2014", activated: null, plan: "Teya Growth", pairingCode: "TYA-4829", overrides: null },
+  { id: 3, name: "Terrace POS", model: "Teya Move", serial: "SN-9102-B", store: "Waterloo Way", status: "active", cost: 19, nextBill: "1 Apr 2026", activated: "3 Mar 2025", plan: "Teya Growth", pairingCode: null, overrides: { amex: false, tips: "off" } },
+  { id: 4, name: "New Terminal", model: "Sunmi P3", serial: "SN-3301-E", store: "Camden Corner", status: "in_transit", cost: 22, nextBill: "\u2014", activated: null, plan: "Teya Growth", pairingCode: "TYA-5012", overrides: null },
+  { id: 5, name: "Window POS", model: "Teya Move", serial: "SN-6610-F", store: "Waterloo Way", status: "inactive", cost: 19, nextBill: "\u2014", activated: "5 Jun 2025", plan: "Teya Growth", pairingCode: null, overrides: null },
+];
+const PLAN = { name: "Teya Growth", cost: 49, acquiringFee: "1.25%", dailyFee: "\u00a30.50", terminals: 5, hasBusinessAccount: true };
+
+// Card logos
+function CardLogo({ network }) {
+  const logos = {
+    visa: <svg width="36" height="12" viewBox="0 0 36 12"><rect width="36" height="12" rx="2" fill="#1A1F71"/><text x="18" y="9" textAnchor="middle" fill="#fff" fontSize="7.5" fontWeight="700" fontFamily="Arial">VISA</text></svg>,
+    mc: <svg width="28" height="18" viewBox="0 0 28 18"><circle cx="10" cy="9" r="8" fill="#EB001B"/><circle cx="18" cy="9" r="8" fill="#F79E1B"/><path d="M14 2.8A8 8 0 0 1 14 15.2A8 8 0 0 1 14 2.8" fill="#FF5F00"/></svg>,
+    amex: <svg width="36" height="12" viewBox="0 0 36 12"><rect width="36" height="12" rx="2" fill="#006FCF"/><text x="18" y="9" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="700" fontFamily="Arial">AMEX</text></svg>,
+    diners: <svg width="36" height="12" viewBox="0 0 36 12"><rect width="36" height="12" rx="2" fill="#004A97"/><text x="18" y="9" textAnchor="middle" fill="#fff" fontSize="5.5" fontWeight="700" fontFamily="Arial">DINERS</text></svg>,
+    discover: <svg width="36" height="12" viewBox="0 0 36 12"><rect width="36" height="12" rx="2" fill="#FF6000"/><text x="18" y="9" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="700" fontFamily="Arial">DISCOVER</text></svg>,
+    cup: <svg width="36" height="12" viewBox="0 0 36 12"><rect width="36" height="12" rx="2" fill="#E21836"/><text x="18" y="9" textAnchor="middle" fill="#fff" fontSize="5" fontWeight="700" fontFamily="Arial">UnionPay</text></svg>,
+  };
+  return <span style={{ display: "inline-flex", alignItems: "center", flexShrink: 0 }}>{logos[network]}</span>;
+}
+
+// ── Notification Data ────────────────────────────────────────
+const INIT_NOTIFICATIONS = [
+  { id: 1, type: "payout", category: "Payouts", title: "Payout completed", body: "\u00a31,240.21 has been paid to your bank account ending 6731.", time: "2 min ago", read: false },
+  { id: 2, type: "refund", category: "Refunds", title: "Refund triggered", body: "A refund of \u00a324.50 has been initiated for order #4821.", time: "18 min ago", read: false },
+  { id: 3, type: "product", category: "Product update", title: "New: Tap to Pay on iPhone", body: "Accept contactless payments directly on your iPhone \u2014 no terminal needed.", time: "1 hr ago", read: false },
+  { id: 4, type: "report", category: "Reports", title: "Settlement report ready", body: "Your daily settlement report for 22 Mar 2026 is available to download.", time: "3 hr ago", read: false },
+  { id: 5, type: "payout", category: "Payouts", title: "Payout completed", body: "\u00a3987.44 has been paid to your bank account ending 6731.", time: "Yesterday", read: true },
+  { id: 6, type: "refund", category: "Refunds", title: "Refund completed", body: "Refund of \u00a312.00 for order #4790 has been processed successfully.", time: "Yesterday", read: true },
+  { id: 7, type: "product", category: "Product update", title: "Improved reports dashboard", body: "We've redesigned your reports page for faster access to settlement and PBL data.", time: "2 days ago", read: true },
+  { id: 8, type: "report", category: "Reports", title: "PBL report ready", body: "Your weekly PBL report for 15\u201321 Mar is now available.", time: "3 days ago", read: true },
+];
+
+const NOTIF_ICONS = {
+  payout: <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 2V18M6 6L10 2L14 6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 12H17" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>,
+  refund: <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 10C4 6.69 6.69 4 10 4C13.31 4 16 6.69 16 10C16 13.31 13.31 16 10 16" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M10 16L7 13M10 16L13 13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  product: <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 2L17 6V14L10 18L3 14V6L10 2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M10 18V10M10 10L3 6M10 10L17 6" stroke="currentColor" strokeWidth="1.4"/></svg>,
+  report: <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 2H12L16 6V17C16 17.55 15.55 18 15 18H5C4.45 18 4 17.55 4 17V3C4 2.45 4.45 2 5 2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M12 2V6H16" stroke="currentColor" strokeWidth="1.3"/><path d="M7 10H13M7 13H11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>,
+};
+
+const NOTIF_COLORS = {
+  payout: { bg: "rgba(94,165,0,0.1)", fg: "#5ea500" },
+  refund: { bg: "rgba(224,120,0,0.1)", fg: "#e07800" },
+  product: { bg: "rgba(21,101,192,0.1)", fg: "#1565c0" },
+  report: { bg: "rgba(95,79,48,0.08)", fg: "rgba(22,20,14,0.55)" },
+};
+
+// ── Bell Icon with Badge ─────────────────────────────────────
+function BellButton({ unreadCount, onClick, pulsing }) {
+  return (
+    <button onClick={onClick} style={{ width: 40, height: 40, borderRadius: T.radius.full, background: "rgba(245,245,240,0.8)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "none", color: T.color.primary, flexShrink: 0, position: "relative", animation: pulsing ? "bellPulse .5s ease-out" : "none" }}>
+      {I.bell}
+      {unreadCount > 0 && (
+        <span style={{
+          position: "absolute", top: 2, right: 2,
+          minWidth: 18, height: 18, borderRadius: 9,
+          background: T.color.negative, color: "#fff",
+          fontSize: 10, fontWeight: 700, fontFamily: T.font,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "0 4px",
+          border: "2px solid rgba(245,245,240,0.8)",
+          animation: "badgePop .3s ease-out",
+          lineHeight: 1,
+        }}>
+          {unreadCount > 99 ? "99+" : unreadCount}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// Status helpers
+const STATUS = {
+  active: { label: "Active" },
+  inactive: { label: "Inactive" },
+  delivered: { label: "Delivered" },
+  in_transit: { label: "In transit" },
+  pending_review: { label: "Pending review" },
+};
+
+function statusColor(status) {
+  switch (status) {
+    case "active": return { bg: T.color.positiveBg, fg: T.color.positive };
+    case "inactive": return { bg: T.color.warningBg, fg: T.color.warning };
+    case "delivered": return { bg: "rgba(143,134,118,0.1)", fg: T.color.secondary };
+    case "in_transit": return { bg: T.color.infoBg, fg: T.color.info };
+    case "pending_review": return { bg: T.color.warningBg, fg: T.color.warning };
+    default: return { bg: T.color.bgElevated, fg: T.color.secondary };
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// REUSABLE COMPONENTS
+// ══════════════════════════════════════════════════════════════
+
+function StatusBar() {
+  return <div style={{ height: 50, padding: "14px 28px 0", display: "flex", alignItems: "flex-start", justifyContent: "space-between", fontSize: 15, fontWeight: 600, flexShrink: 0 }}><span>9:41</span><span style={{ fontSize: 12, letterSpacing: 2 }}>{"\u25CF\u25CF\u25CF \u25B8"}</span></div>;
+}
+
+function TopBar({ title, onBack, onClose, trailing, olive }) {
+  return (
+    <div style={{ position: "sticky", top: 0, zIndex: 20, background: olive ? T.color.oliveGrad : T.color.bgSubtle, flexShrink: 0 }}>
+      <StatusBar />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {(onBack || onClose) && <Btn40 onClick={onBack || onClose}>{onClose ? I.close : I.back}</Btn40>}
+          {title && <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.3 }}>{title}</span>}
+        </div>
+        {trailing && <div style={{ display: "flex", gap: 8 }}>{trailing}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Btn40({ onClick, children, style: s }) {
+  return <button style={{ width: 40, height: 40, borderRadius: T.radius.full, background: "rgba(245,245,240,0.8)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "none", color: T.color.primary, flexShrink: 0, ...s }} onClick={onClick}>{children}</button>;
+}
+
+function Card({ children, style: s, onClick }) {
+  return <div style={{ background: T.color.bgDefault, borderRadius: T.radius.lg, margin: "0 12px 12px", overflow: "hidden", ...(onClick ? { cursor: "pointer" } : {}), ...s }} onClick={onClick}>{children}</div>;
+}
+
+function ListRow({ icon, iconBg, label, desc, trailing, onClick, last, style: s }) {
+  const [h, setH] = useState(false);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", cursor: onClick ? "pointer" : "default", borderRadius: T.radius.md, background: h ? T.color.bgElevated : "transparent", borderBottom: last ? "none" : `1px solid ${T.color.borderLight}`, transition: "background .12s", ...s }}
+      onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}>
+      {icon && <div style={{ width: 40, height: 40, borderRadius: T.radius.md, display: "flex", alignItems: "center", justifyContent: "center", background: iconBg || T.color.bgElevated, flexShrink: 0, color: T.color.primary }}>{icon}</div>}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 16, fontWeight: 500, lineHeight: "22px" }}>{label}</div>
+        {desc && <div style={{ fontSize: 14, color: T.color.secondary, marginTop: 1, lineHeight: "20px" }}>{desc}</div>}
+      </div>
+      {trailing !== undefined ? trailing : (onClick ? <span style={{ color: T.color.tertiary, flexShrink: 0 }}>{I.chev}</span> : null)}
+    </div>
+  );
+}
+
+function DataRow({ k, v, vColor }) {
+  return <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 0", fontSize: 16 }}><span style={{ color: T.color.secondary }}>{k}</span><span style={{ fontWeight: 500, color: vColor || T.color.primary }}>{v}</span></div>;
+}
+
+function Badge({ type, children }) {
+  const c = statusColor(type);
+  return <span style={{ fontSize: 12, fontWeight: 500, borderRadius: T.radius.full, padding: "2px 10px", background: c.bg, color: c.fg, display: "inline-block", whiteSpace: "nowrap" }}>{children}</span>;
+}
+
+function SectionLabel({ children }) {
+  return <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase", color: T.color.secondary, padding: "16px 16px 8px" }}>{children}</div>;
+}
+
+function TabBar() {
+  return (
+    <div style={{ position: "sticky", bottom: 0, zIndex: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 16px 28px", flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", borderRadius: T.radius.full, background: T.color.bgDefault, padding: 4, flex: 1, boxShadow: "0 4px 24px rgba(0,0,0,0.07)" }}>
+        {[["Home", I.home, true], ["Sales", I.sales], ["Money", I.money], ["Tab", <span style={{ fontSize: 14 }}>{"\u26A1"}</span>]].map(([l, ic, a]) => (
+          <button key={l} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2, padding: "8px 0", borderRadius: T.radius.full, fontSize: 10, fontWeight: 500, fontFamily: T.font, border: "none", cursor: "pointer", background: a ? T.color.bgElevated : "transparent", color: a ? T.color.primary : T.color.secondary }}><span>{ic}</span><span>{l}</span></button>
+        ))}
+      </div>
+      <button style={{ width: 54, height: 54, borderRadius: T.radius.full, background: T.color.bgDefault, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 24px rgba(0,0,0,0.07)", border: "none", cursor: "pointer", color: T.color.primary, flexShrink: 0 }}>{I.search}</button>
+    </div>
+  );
+}
+
+function Toggle({ on, onToggle, disabled }) {
+  return (
+    <button onClick={disabled ? undefined : onToggle} style={{ width: 48, height: 28, borderRadius: 14, cursor: disabled ? "default" : "pointer", background: on ? T.color.positive : T.color.borderMed, border: "none", position: "relative", transition: "background .2s", flexShrink: 0, opacity: disabled ? 0.5 : 1 }}>
+      <div style={{ width: 24, height: 24, borderRadius: 12, background: "#fff", position: "absolute", top: 2, transition: "left .2s", left: on ? 22 : 2, boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} />
+    </button>
+  );
+}
+
+function Toast({ msg, type, onDone }) {
+  useEffect(() => { const t = setTimeout(onDone, 3500); return () => clearTimeout(t); }, [onDone]);
+  const isOk = type === "success";
+  return <div style={{ position: "absolute", top: 110, left: 12, right: 12, zIndex: 30, padding: "12px 16px", borderRadius: T.radius.md, fontSize: 14, fontWeight: 500, display: "flex", alignItems: "center", gap: 8, background: isOk ? T.color.positiveBg : T.color.warningBg, color: isOk ? T.color.positive : T.color.warning, boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>{isOk && <span>{I.check}</span>}{msg}</div>;
+}
+
+function Sheet({ open, onClose, children }) {
+  if (!open) return null;
+  // Portal-style: render at phone frame level using fixed positioning constrained to phone dimensions
+  const phoneEl = document.getElementById("phone-frame");
+  const rect = phoneEl ? phoneEl.getBoundingClientRect() : { top: 0, left: 0, width: 393, height: 852 };
+  return ReactDOM.createPortal(
+    <div style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width, height: rect.height, background: "rgba(0,0,0,.45)", zIndex: 50, display: "flex", alignItems: "flex-end", borderRadius: 44, overflow: "hidden" }} onClick={onClose}>
+      <div style={{ width: "100%", maxHeight: "85%", background: T.color.bgDefault, borderRadius: `${T.radius.xl}px ${T.radius.xl}px 0 0`, overflow: "auto" }} onClick={e => e.stopPropagation()}>
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: T.color.borderMed, margin: "12px auto 16px" }} />
+        <div style={{ padding: "0 16px 32px" }}>{children}</div>
+      </div>
+    </div>,
+    phoneEl || document.body
+  );
+}
+
+function Popover({ open, onClose, items }) {
+  if (!open) return null;
+  return (
+    <>
+      <div style={{ position: "fixed", inset: 0, zIndex: 40 }} onClick={onClose} />
+      <div style={{ position: "absolute", top: 108, right: 16, zIndex: 41, background: T.color.bgDefault, borderRadius: T.radius.md, boxShadow: "0 8px 32px rgba(0,0,0,0.14)", padding: "4px 0", minWidth: 220 }}>
+        {items.map((it, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", cursor: "pointer", fontSize: 15, fontWeight: 500, color: it.danger ? T.color.negative : T.color.primary }} onClick={() => { it.action(); onClose(); }}
+            onMouseEnter={e => e.currentTarget.style.background = T.color.bgElevated}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+            <span style={{ color: it.danger ? T.color.negative : T.color.secondary }}>{it.icon}</span>
+            {it.label}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function Banner({ title, desc, cta, onClick, icon }) {
+  return (
+    <div style={{ background: T.color.bannerGrad, borderRadius: T.radius.md, margin: "0 12px 12px", padding: 16, display: "flex", gap: 12, alignItems: "center", cursor: "pointer" }} onClick={onClick}>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{title}</div>
+        <div style={{ fontSize: 13, color: T.color.secondary, marginBottom: 8, lineHeight: 1.45 }}>{desc}</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: T.color.accent, textDecoration: "underline" }}>{cta}</div>
+      </div>
+      <div style={{ width: 72, height: 72, borderRadius: T.radius.md, background: "rgba(255,255,255,.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>{icon || "\uD83D\uDCDE"}</div>
+    </div>
+  );
+}
+
+function FilterChip({ label, active, onClick }) {
+  return <button onClick={onClick} style={{ padding: "7px 16px", borderRadius: T.radius.full, fontSize: 14, fontWeight: 500, fontFamily: T.font, cursor: "pointer", whiteSpace: "nowrap", border: active ? "none" : `1px solid ${T.color.borderMed}`, background: active ? T.color.primary : T.color.bgDefault, color: active ? "#fff" : T.color.primary, transition: "all .15s" }}>{label}</button>;
+}
+
+function QuickAction({ icon, label, onClick, last }) {
+  const [h, setH] = useState(false);
+  return (
+    <>
+      <div onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+        style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer", background: h ? T.color.bgElevated : "transparent", borderRadius: T.radius.md, transition: "background .12s" }}>
+        <span style={{ color: T.color.secondary }}>{icon}</span>
+        <span style={{ flex: 1, fontSize: 16, fontWeight: 500 }}>{label}</span>
+        <span style={{ color: T.color.tertiary }}>{I.chev}</span>
+      </div>
+      {!last && <div style={{ height: 1, background: T.color.borderLight, margin: "0 16px" }} />}
+    </>
+  );
+}
+
+function PrimaryBtn({ label, onClick, disabled, danger }) {
+  return <button style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "14px 20px", borderRadius: T.radius.md, fontSize: 16, fontWeight: 600, fontFamily: T.font, cursor: disabled ? "default" : "pointer", border: "none", background: danger ? T.color.negative : T.color.primary, color: "#fff", opacity: disabled ? .4 : 1 }} onClick={disabled ? undefined : onClick}>{label}</button>;
+}
+
+function SecondaryBtn({ label, onClick }) {
+  return <button style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "14px 20px", borderRadius: T.radius.md, fontSize: 16, fontWeight: 600, fontFamily: T.font, cursor: "pointer", border: `1.5px solid ${T.color.borderMed}`, background: "transparent", color: T.color.primary, marginTop: 8 }} onClick={onClick}>{label}</button>;
+}
+
+function DropdownSelect({ value, options, onChange }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ position: "relative" }}>
+      <button onClick={() => setOpen(!open)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: T.radius.full, border: `1px solid ${T.color.borderMed}`, background: T.color.bgDefault, fontSize: 14, fontWeight: 500, fontFamily: T.font, cursor: "pointer", color: T.color.primary }}>
+        {I.store}
+        <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span>
+        {I.dropdown}
+      </button>
+      {open && <>
+        <div style={{ position: "fixed", inset: 0, zIndex: 30 }} onClick={() => setOpen(false)} />
+        <div style={{ position: "absolute", top: "100%", left: 0, marginTop: 4, zIndex: 31, background: T.color.bgDefault, borderRadius: T.radius.md, boxShadow: "0 8px 32px rgba(0,0,0,.14)", padding: "4px 0", minWidth: 180 }}>
+          {options.map(o => (
+            <div key={o.value} style={{ padding: "10px 14px", fontSize: 14, fontWeight: o.value === value ? 600 : 400, cursor: "pointer", background: o.value === value ? T.color.bgElevated : "transparent", color: T.color.primary }} onClick={() => { onChange(o.value); setOpen(false); }}
+              onMouseEnter={e => e.currentTarget.style.background = T.color.bgElevated}
+              onMouseLeave={e => { if (o.value !== value) e.currentTarget.style.background = "transparent"; }}>{o.label}</div>
+          ))}
+        </div>
+      </>}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// SCREENS
+// ══════════════════════════════════════════════════════════════
+
+function HomeScreen({ onAvatar, onBell, unreadCount }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
+      <div style={{ background: T.color.oliveGrad, flexShrink: 0 }}>
+        <StatusBar />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 16px 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }} onClick={onAvatar}>
+            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#f8d0c0,#f0a090)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{"\u2615"}</div>
+            <span style={{ fontSize: 16, fontWeight: 600 }}>CoffeeBrain</span>
+          </div>
+          <BellButton unreadCount={unreadCount} onClick={onBell} />
+        </div>
+      </div>
+      <div style={{ flex: 1, padding: "16px 0 0", overflowY: "auto" }}>
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: T.color.secondary, marginBottom: 8 }}>Teya Account</div>
+            <div style={{ fontSize: 13, color: T.color.secondary }}>Available balance</div>
+            <div style={{ fontSize: 36, fontWeight: 700, margin: "2px 0", letterSpacing: -.5 }}>{"\u00a3"}7,764.06</div>
+            <div style={{ fontSize: 14, color: T.color.secondary }}>30-18-22 {"\u00b7"} 59106731</div>
+          </div>
+          <div style={{ height: 1, background: T.color.borderLight, margin: "0 12px" }} />
+          <div style={{ padding: "0 4px" }}>
+            <ListRow icon={<span style={{ fontSize: 15 }}>{"\uD83D\uDCB0"}</span>} iconBg={T.color.positiveBg} label="Savings" desc={"Floor: \u00a35,000"} last trailing={<span style={{ fontWeight: 600, fontSize: 16 }}>{"\u00a3"}11,302.65</span>} />
+          </div>
+        </Card>
+        <div style={{ display: "flex", gap: 12, padding: "0 12px", marginBottom: 12 }}>
+          {[{ icon: "\uD83D\uDCC5", label: "Upcoming money", val: "+ \u00a31,240.21", sub: "Tomorrow" },
+            { icon: "\uD83D\uDCE4", label: "Upcoming expenses", val: "- \u00a3482.37", sub: "Next 3 days" }].map((w, i) => (
+            <Card key={i} style={{ flex: 1, margin: 0, padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: T.radius.md, background: i === 0 ? T.color.positiveBg : T.color.warningBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{w.icon}</div>
+                <span style={{ color: T.color.tertiary }}>{I.chev}</span>
+              </div>
+              <div style={{ fontSize: 12, color: T.color.secondary }}>{w.label}</div>
+              <div style={{ fontSize: 20, fontWeight: 700, margin: "2px 0" }}>{w.val}</div>
+              <div style={{ fontSize: 12, color: T.color.tertiary }}>{w.sub}</div>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: T.color.secondary }}>Sales</span>
+              <span style={{ fontSize: 12, color: T.color.positive, fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}>Live <span style={{ width: 6, height: 6, borderRadius: 3, background: T.color.positive }} /></span>
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary }}>Card sales this month</div>
+            <div style={{ fontSize: 28, fontWeight: 700, margin: "2px 0" }}>{"\u00a3"}12,673.06</div>
+            <div style={{ fontSize: 14, color: T.color.positive }}>{"\u2191"} 12% vs last month</div>
+          </div>
+        </Card>
+        <div style={{ height: 16 }} />
+      </div>
+      <TabBar />
+    </div>
+  );
+}
+
+function AccountScreen({ nav, goBack, terminals }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
+      <div style={{ flexShrink: 0 }}>
+        <StatusBar />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px 12px" }}>
+          <Btn40 onClick={goBack}>{I.close}</Btn40>
+          <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: T.radius.full, border: `1px solid ${T.color.borderMed}`, background: T.color.bgDefault, fontSize: 13, fontWeight: 600, fontFamily: T.font, cursor: "pointer", color: T.color.primary }}>
+            {I.diamond} Upgrade
+          </button>
+        </div>
+      </div>
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        <div style={{ textAlign: "center", padding: "4px 16px 20px" }}>
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg,#f8d0c0,#f0a090)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, margin: "0 auto 10px" }}>{"\u2615"}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+            <span style={{ fontSize: 18, fontWeight: 700 }}>CoffeeBrain</span>
+            <span style={{ color: T.color.tertiary }}>{I.dropdown}</span>
+          </div>
+          <div style={{ fontSize: 14, color: T.color.secondary, marginTop: 2 }}>Starter Plan {"\u00b7"} {STORES.length} Stores</div>
+        </div>
+        <Card>
+          <div style={{ padding: "14px 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontSize: 16, fontWeight: 600 }}>Require action</span>
+              <span style={{ width: 8, height: 8, borderRadius: 4, background: T.color.negative }} />
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: T.radius.md, background: T.color.bgElevated, display: "flex", alignItems: "center", justifyContent: "center", color: T.color.secondary }}>{I.clock}</div>
+              <span style={{ flex: 1, fontSize: 15, fontWeight: 500 }}>3 payments to approve</span>
+              <span style={{ color: T.color.tertiary }}>{I.chev}</span>
+            </div>
+          </div>
+        </Card>
+        <div style={{ display: "flex", gap: 12, padding: "0 12px", marginBottom: 12 }}>
+          <Card style={{ flex: 1, margin: 0, cursor: "pointer" }} onClick={() => nav("catalogue")}>
+            <div style={{ padding: 16 }}>
+              <div style={{ width: 44, height: 44, borderRadius: T.radius.md, background: T.color.bannerGrad, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, color: T.color.primary }}>{I.box}</div>
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 2 }}>Start</div>
+              <div style={{ fontSize: 13, color: T.color.secondary }}>Your Plan</div>
+            </div>
+          </Card>
+          <Card style={{ flex: 1, margin: 0, cursor: "pointer" }} onClick={() => nav("terminals")}>
+            <div style={{ padding: 16 }}>
+              <div style={{ width: 44, height: 44, borderRadius: T.radius.md, background: "#e8f5e1", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                <span style={{ fontSize: 22 }}>{"\uD83D\uDCF1"}</span>
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 2 }}>Card machines</div>
+              <div style={{ fontSize: 13, color: T.color.secondary }}>{terminals.length} units</div>
+            </div>
+          </Card>
+        </div>
+        <Card>
+          <div style={{ padding: "0 4px" }}>
+            <ListRow icon={I.store} label="Stores" desc={`${ALL_STORES.length} stores`} onClick={() => nav("stores")} />
+            <ListRow icon={I.box} label="Pricing plan & products" onClick={() => nav("catalogue")} />
+            <ListRow icon={I.bank} label="Bank accounts" onClick={() => {}} />
+            <ListRow icon={I.sliders} label="Integrations" onClick={() => {}} />
+            <ListRow icon={I.doc} label="Documents & Statements" onClick={() => {}} last />
+          </div>
+        </Card>
+        <div style={{ height: 16 }} />
+      </div>
+    </div>
+  );
+}
+
+function CatalogueScreen({ nav, goBack, terminals, motoActive, setMotoActive, payLinksActive, setPayLinksActive }) {
+  const activeCount = terminals.filter(t => t.status === "active").length;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
+      <TopBar title="Pricing plan & products" onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 0 0" }}>
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: T.color.secondary, marginBottom: 4 }}>Your plan</div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 2 }}>{PLAN.name}</div>
+            <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: -.5 }}>{"\u00a3"}{PLAN.cost}.00<span style={{ fontSize: 14, fontWeight: 400, color: T.color.secondary }}>/month</span></div>
+            <div style={{ marginTop: 14 }}>
+              <DataRow k="Acquiring fee" v={PLAN.acquiringFee} />
+              <DataRow k="Daily fee" v={PLAN.dailyFee} />
+              <DataRow k="Included terminals" v={PLAN.terminals} />
+              <DataRow k="Business account" v="Included" />
+            </div>
+          </div>
+          <div style={{ height: 1, background: T.color.borderLight, margin: "0 12px" }} />
+          <div style={{ padding: "0 4px" }}>
+            <ListRow icon={I.gear} iconBg={T.color.bannerGrad} label="Payment and fee configuration" desc="Manage card schemes, DCC, and payment methods" last onClick={() => nav("payConfig")} />
+          </div>
+        </Card>
+        <SectionLabel>Your products</SectionLabel>
+        <Card>
+          <div style={{ padding: "0 4px" }}>
+            <ListRow icon={I.terminal} iconBg={T.color.positiveBg} label="Card machines" desc="From \u00a315/mo per device" onClick={() => nav("terminals")}
+              trailing={<div style={{ display: "flex", alignItems: "center", gap: 8 }}><Badge type="active">{activeCount} active</Badge><span style={{ color: T.color.tertiary }}>{I.chev}</span></div>} />
+            <ListRow icon={I.phone} iconBg={T.color.positiveBg} label="Tap" desc="Accept contactless with your phone"
+              trailing={<div style={{ display: "flex", alignItems: "center", gap: 8 }}><Badge type="active">Active</Badge><span style={{ color: T.color.tertiary }}>{I.chev}</span></div>}
+              onClick={() => {}} />
+            <ListRow icon={I.cart} iconBg="rgba(21,101,192,0.1)" label="E-commerce" desc="Online checkout for your store"
+              trailing={<div style={{ display: "flex", alignItems: "center", gap: 8 }}><Badge type="active">Active</Badge><span style={{ color: T.color.tertiary }}>{I.chev}</span></div>}
+              onClick={() => nav("ecommerce")} />
+            <ListRow icon={I.link} iconBg={payLinksActive ? T.color.positiveBg : T.color.bgElevated} label="Payment Links" desc="Send payment links to customers"
+              onClick={() => nav(payLinksActive ? "payLinksConfig" : "payLinksInfo")}
+              trailing={<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Badge type={payLinksActive ? "active" : "inactive"}>{payLinksActive ? "Active" : "Inactive"}</Badge>
+                <span style={{ color: T.color.tertiary }}>{I.chev}</span>
+              </div>} />
+            <ListRow icon={I.phone} iconBg={motoActive === "active" ? T.color.positiveBg : motoActive === "pending" ? T.color.warningBg : T.color.bgElevated} label="Manual Entry (MOTO)" desc="Key in card details on your terminal" last
+              onClick={() => nav("motoInfo")}
+              trailing={<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Badge type={motoActive === "active" ? "active" : motoActive === "pending" ? "pending_review" : "inactive"}>{motoActive === "active" ? "Active" : motoActive === "pending" ? "Pending review" : "Inactive"}</Badge>
+                <span style={{ color: T.color.tertiary }}>{I.chev}</span>
+              </div>} />
+          </div>
+        </Card>
+        {PLAN.hasBusinessAccount && (
+          <Card>
+            <div style={{ padding: "0 4px" }}><ListRow icon={I.bank} iconBg="rgba(33,150,243,0.1)" label="Business Account" desc="30-18-22 \u00b7 59106731" last onClick={() => {}}
+              trailing={<div style={{ display: "flex", alignItems: "center", gap: 8 }}><Badge type="active">Active</Badge><span style={{ color: T.color.tertiary }}>{I.chev}</span></div>} /></div>
+          </Card>
+        )}
+        <SectionLabel>Products you can add</SectionLabel>
+        <Card>
+          <div style={{ padding: "0 4px" }}>
+            <ListRow icon={<span style={{ fontSize: 16 }}>{"\uD83D\uDCB3"}</span>} iconBg={T.color.bgElevated} label="Credit" desc="Get up to \u00a350K funded from your sales" onClick={() => {}}
+              trailing={<span style={{ fontSize: 13, fontWeight: 600, color: T.color.accent, background: T.color.bannerGrad, padding: "4px 12px", borderRadius: T.radius.full }}>Get started</span>} last />
+          </div>
+        </Card>
+        <div style={{ height: 16 }} />
+      </div>
+      <TabBar />
+    </div>
+  );
+}
+
+function TerminalsScreen({ nav, goBack, terminals }) {
+  const [storeFilter, setStoreFilter] = useState("All stores");
+  const [searchQ, setSearchQ] = useState("");
+  const filtered = terminals.filter(t => {
+    if (storeFilter !== "All stores" && t.store !== storeFilter) return false;
+    if (searchQ && !t.name.toLowerCase().includes(searchQ.toLowerCase()) && !t.serial.toLowerCase().includes(searchQ.toLowerCase())) return false;
+    return true;
+  });
+  const activeCount = terminals.filter(t => t.status === "active").length;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
+      <TopBar title="Card machines" onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "4px 0 0" }}>
+        <div style={{ padding: "0 16px 8px", fontSize: 14, color: T.color.secondary }}>You have {terminals.length} card machines {"\u00b7"} {activeCount} active</div>
+        <div style={{ display: "flex", gap: 8, padding: "0 16px 12px", alignItems: "center" }}>
+          <DropdownSelect value={storeFilter} onChange={setStoreFilter} options={[{ value: "All stores", label: "All stores" }, ...STORES.map(s => ({ value: s, label: s }))]} />
+          <div style={{ flex: 1, position: "relative" }}>
+            <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder={"Search\u2026"} style={{ width: "100%", padding: "8px 12px 8px 32px", borderRadius: T.radius.full, border: `1px solid ${T.color.borderMed}`, fontSize: 14, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box" }} />
+            <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: T.color.tertiary, pointerEvents: "none" }}>{I.search}</span>
+          </div>
+        </div>
+        <div style={{ padding: "0 12px 12px" }}>
+          <button style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "12px 20px", borderRadius: T.radius.md, fontSize: 15, fontWeight: 600, fontFamily: T.font, cursor: "pointer", border: `1.5px solid ${T.color.borderMed}`, background: T.color.bgDefault, color: T.color.primary }} onClick={() => {}}>
+            {I.plus} Request another terminal
+          </button>
+        </div>
+        <Card>
+          <div style={{ padding: "0 4px" }}>
+            {filtered.map((t, i) => {
+              const sc = statusColor(t.status);
+              const st = STATUS[t.status];
+              return (
+                <ListRow key={t.id} icon={I.terminal} iconBg={sc.bg} label={t.name}
+                  desc={<>{t.model} {"\u00b7"} {t.store}</>} last={i === filtered.length - 1}
+                  onClick={() => nav("detail", t.id)}
+                  trailing={<div style={{ textAlign: "right" }}>
+                    <Badge type={t.status}>{st.label}</Badge>
+                    {t.status !== "in_transit" && <div style={{ fontSize: 14, fontWeight: 500, marginTop: 4 }}>{"\u00a3"}{t.cost}/mo</div>}
+                    {t.status === "in_transit" && <div style={{ fontSize: 12, color: T.color.info, marginTop: 4 }}>Est. 26 Mar</div>}
+                  </div>}
+                />
+              );
+            })}
+            {filtered.length === 0 && <div style={{ padding: 24, textAlign: "center", fontSize: 14, color: T.color.secondary }}>No terminals match your filters</div>}
+          </div>
+        </Card>
+        <div style={{ height: 16 }} />
+      </div>
+      <TabBar />
+    </div>
+  );
+}
+
+function DetailScreen({ nav, goBack, termId, terminals, setTerminals }) {
+  const t = terminals.find(x => x.id === termId) || terminals[0];
+  const [toast, setToast] = useState(null);
+  const [popover, setPopover] = useState(false);
+  const [showPin, setShowPin] = useState(false);
+  const [showSwap, setShowSwap] = useState(false);
+  const [showDeactivate, setShowDeactivate] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [draftName, setDraftName] = useState(t.name);
+  const [pin, setPin] = useState("");
+  const [pinC, setPinC] = useState("");
+  const [pinErr, setPinErr] = useState("");
+  const [codeCopied, setCodeCopied] = useState(false);
+
+  const isActive = t.status === "active";
+  const isDelivered = t.status === "delivered";
+  const isTransit = t.status === "in_transit";
+  const isInactive = t.status === "inactive";
+  const st = STATUS[t.status];
+
+  const saveName = () => {
+    if (draftName.trim() && draftName !== t.name) {
+      setTerminals(p => p.map(x => x.id === t.id ? { ...x, name: draftName.trim() } : x));
+      setToast({ msg: "Name updated", type: "success" });
+    }
+    setEditingName(false);
+  };
+
+  const handleActivate = () => {
+    setTerminals(p => p.map(x => x.id === t.id ? { ...x, status: "active", activated: "23 Mar 2026", pairingCode: null } : x));
+    setToast({ msg: `${t.name} activated successfully`, type: "success" });
+  };
+
+  const handleDeactivate = () => {
+    setTerminals(p => p.map(x => x.id === t.id ? { ...x, status: "inactive" } : x));
+    setShowDeactivate(false);
+    setToast({ msg: `${t.name} deactivated`, type: "success" });
+  };
+
+  const handlePin = () => {
+    if (pin.length < 4) { setPinErr("PIN must be 4 digits"); return; }
+    if (pin !== pinC) { setPinErr("PINs don't match. Please try again."); return; }
+    setShowPin(false); setPin(""); setPinC(""); setPinErr("");
+    setToast({ msg: "PIN updated. Terminal will prompt for the new PIN.", type: "success" });
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", position: "relative" }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <div style={{ background: T.color.oliveGrad, flexShrink: 0, position: "relative" }}>
+        <StatusBar />
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 16px 0" }}>
+          <Btn40 onClick={goBack}>{I.close}</Btn40>
+          {(isActive || isInactive) && <Btn40 onClick={() => setPopover(!popover)}>{I.more}</Btn40>}
+        </div>
+        <Popover open={popover} onClose={() => setPopover(false)} items={[
+          { icon: I.swap, label: "Swap card machine", action: () => setShowSwap(true) },
+          ...(isActive ? [{ icon: I.deactivate, label: "Deactivate terminal", danger: true, action: () => setShowDeactivate(true) }] : []),
+        ]} />
+        <div style={{ textAlign: "center", padding: "16px 16px 24px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            {editingName ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input value={draftName} onChange={e => setDraftName(e.target.value)} autoFocus
+                  style={{ fontSize: 26, fontWeight: 700, textAlign: "center", border: "none", borderBottom: `2px solid ${T.color.primary}`, background: "transparent", outline: "none", fontFamily: T.font, padding: "0 4px", width: Math.max(120, draftName.length * 14), color: T.color.primary }}
+                  onKeyDown={e => e.key === "Enter" && saveName()} />
+                <Btn40 onClick={saveName} style={{ background: T.color.positiveBg, width: 36, height: 36 }}><span style={{ color: T.color.positive }}>{I.check}</span></Btn40>
+              </div>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }} onClick={() => setEditingName(true)}>
+                <span style={{ fontSize: 26, fontWeight: 700, letterSpacing: -.3 }}>{t.name}</span>
+                <span style={{ color: T.color.tertiary, flexShrink: 0 }}>{I.edit}</span>
+              </div>
+            )}
+          </div>
+          <div style={{ marginTop: 8 }}><Badge type={t.status}>{st.label}</Badge></div>
+          <div style={{ fontSize: 14, color: T.color.secondary, marginTop: 6 }}>{t.model} {"\u00b7"} {t.serial}</div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px 0 0" }}>
+        {(isDelivered || isTransit) && t.pairingCode && (
+          <Card style={{ borderLeft: `3px solid ${isDelivered ? T.color.positive : T.color.info}` }}>
+            <div style={{ padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ color: isDelivered ? T.color.positive : T.color.info }}>{I.key}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: T.color.secondary }}>Pairing code</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: 2, fontFamily: "'SF Mono', 'Fira Code', monospace", color: isTransit ? T.color.tertiary : T.color.primary }}>{t.pairingCode}</span>
+                {isDelivered && (
+                  <button onClick={() => { setCodeCopied(true); setTimeout(() => setCodeCopied(false), 2000); }}
+                    style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: T.radius.sm, border: `1px solid ${T.color.borderMed}`, background: codeCopied ? T.color.positiveBg : T.color.bgDefault, fontSize: 12, fontWeight: 500, fontFamily: T.font, cursor: "pointer", color: codeCopied ? T.color.positive : T.color.secondary }}>
+                    {codeCopied ? <>{I.check} Copied</> : <>{I.copy} Copy</>}
+                  </button>
+                )}
+              </div>
+              <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.45 }}>
+                {isTransit ? "Code available once delivered. We'll notify you when your terminal arrives." : `Enter this code on your ${t.model} to activate.`}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>Device info</div>
+            <DataRow k="Model" v={t.model} />
+            <DataRow k="Serial number" v={t.serial} />
+            <DataRow k="Store" v={t.store} />
+            {t.activated && <DataRow k="Activated" v={t.activated} />}
+            {isTransit && <DataRow k="Estimated delivery" v="26 Mar 2026" />}
+            <DataRow k="Plan" v={t.plan} />
+          </div>
+        </Card>
+
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 10 }}>Billing</div>
+            <DataRow k="Monthly cost" v={`\u00a3${t.cost}.00`} />
+            <DataRow k="Next bill" v={isActive ? t.nextBill : "Pending activation"} />
+            <div style={{ textAlign: "center", fontSize: 14, fontWeight: 500, color: T.color.secondary, paddingTop: 6, cursor: "pointer" }}>{"View billing history \u203A"}</div>
+          </div>
+        </Card>
+
+        {isActive && (
+          <Card>
+            <div style={{ padding: "4px 0" }}>
+              <QuickAction icon={I.lock} label="Update terminal PIN" onClick={() => setShowPin(true)} />
+              <QuickAction icon={I.sliders} label="Terminal configuration" onClick={() => {}} />
+              <QuickAction icon={I.gear} label="Accepted payments & fees" onClick={() => nav("payConfig", t.id)} last />
+            </div>
+          </Card>
+        )}
+
+        {isInactive && <div style={{ padding: "4px 12px" }}><PrimaryBtn label="Reactivate card machine" onClick={() => {
+          setTerminals(p => p.map(x => x.id === t.id ? { ...x, status: "active", activated: "23 Mar 2026" } : x));
+          setToast({ msg: `${t.name} reactivated`, type: "success" });
+        }} /></div>}
+        {isTransit && <div style={{ padding: "4px 12px" }}><div style={{ textAlign: "center", fontSize: 14, fontWeight: 500, color: T.color.info, cursor: "pointer", padding: 12 }}>Notify me when delivered</div></div>}
+
+        <div style={{ height: isDelivered ? 80 : 24 }} />
+      </div>
+
+      {isDelivered && (
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, zIndex: 25, padding: "16px 16px 28px", background: "linear-gradient(transparent, #f6f5f3 20px, #f6f5f3)" }}>
+          <PrimaryBtn label="Activate card machine" onClick={handleActivate} />
+        </div>
+      )}
+
+      <Sheet open={showPin} onClose={() => { setShowPin(false); setPinErr(""); }}>
+        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Update PIN</div>
+        <div style={{ fontSize: 14, color: T.color.secondary, marginBottom: 20, display: "flex", alignItems: "flex-start", gap: 8, lineHeight: 1.45 }}><span style={{ flexShrink: 0, marginTop: 1 }}>{I.shield}</span>For your security, only authorised users should change the PIN.</div>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, color: T.color.secondary, marginBottom: 6 }}>New PIN</div>
+          <input type="password" maxLength={4} value={pin} onChange={e => { setPin(e.target.value.replace(/\D/g, "")); setPinErr(""); }} placeholder="Enter 4-digit PIN" style={{ width: "100%", padding: "12px 16px", borderRadius: T.radius.md, border: `1.5px solid ${pinErr ? T.color.negative : T.color.borderMed}`, fontSize: 16, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box" }} />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, color: T.color.secondary, marginBottom: 6 }}>Confirm PIN</div>
+          <input type="password" maxLength={4} value={pinC} onChange={e => { setPinC(e.target.value.replace(/\D/g, "")); setPinErr(""); }} placeholder="Re-enter PIN" style={{ width: "100%", padding: "12px 16px", borderRadius: T.radius.md, border: `1.5px solid ${pinErr ? T.color.negative : T.color.borderMed}`, fontSize: 16, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box" }} />
+        </div>
+        {pinErr && <div style={{ fontSize: 14, color: T.color.negative, marginBottom: 12 }}>{pinErr}</div>}
+        <PrimaryBtn label="Update PIN" onClick={handlePin} />
+        <SecondaryBtn label="Cancel" onClick={() => { setShowPin(false); setPinErr(""); }} />
+      </Sheet>
+      <Sheet open={showSwap} onClose={() => setShowSwap(false)}>
+        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Swap card machine</div>
+        <div style={{ fontSize: 14, color: T.color.secondary, marginBottom: 20, lineHeight: 1.5 }}>Replace this terminal with another device. The new device will inherit all settings.</div>
+        <Card style={{ margin: "0 0 12px" }}>
+          <div style={{ padding: "0 4px" }}>
+            <ListRow icon={I.terminal} iconBg={T.color.bgElevated} label="New Teya Move" desc="SN-1120-D \u00b7 Unassigned" last
+              onClick={() => { setShowSwap(false); setToast({ msg: `Swap complete. ${t.name} now uses the new device.`, type: "success" }); }} />
+          </div>
+        </Card>
+        <SecondaryBtn label="Cancel" onClick={() => setShowSwap(false)} />
+      </Sheet>
+      <Sheet open={showDeactivate} onClose={() => setShowDeactivate(false)}>
+        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Deactivate terminal?</div>
+        <div style={{ fontSize: 14, color: T.color.secondary, marginBottom: 8, lineHeight: 1.5 }}>This will stop all payments on <strong>{t.name}</strong>. The terminal will no longer accept transactions.</div>
+        <div style={{ fontSize: 14, color: T.color.secondary, marginBottom: 20, lineHeight: 1.5 }}>You can reactivate it later or swap it with another device.</div>
+        <PrimaryBtn label="Deactivate" onClick={handleDeactivate} danger />
+        <SecondaryBtn label="Cancel" onClick={() => setShowDeactivate(false)} />
+      </Sheet>
+    </div>
+  );
+}
+
+function PayConfigScreen({ nav, goBack, preselect, terminals, motoActive, payLinksActive }) {
+  const preTerminal = typeof preselect === "number" ? terminals.find(x => x.id === preselect) : null;
+  const isEcomScope = preselect === "ecommerce";
+  const initialScope = preTerminal ? `terminal-${preTerminal.id}` : (isEcomScope ? "ecommerce" : "company");
+  const [scope, setScope] = useState(initialScope);
+  const scopedTerminal = scope.startsWith("terminal-") ? terminals.find(x => x.id === parseInt(scope.split("-")[1])) : null;
+  const isTerminalScope = !!scopedTerminal;
+  const isProductScope = scope === "ecommerce";
+
+  const [amex, setAmex] = useState(scopedTerminal?.overrides?.amex !== undefined ? scopedTerminal.overrides.amex : true);
+  const [diners, setDiners] = useState(false);
+  const [discover, setDiscover] = useState(false);
+  const [cup, setCup] = useState(false);
+  const [dcc, setDcc] = useState(true);
+  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applyChoice, setApplyChoice] = useState("all");
+  const [pendingToggle, setPendingToggle] = useState(null);
+
+  const activeTerminals = terminals.filter(t => t.status === "active");
+  const hasOverrides = activeTerminals.some(t => t.overrides);
+  const ecomStore = ALL_STORES.find(s => s.type === "ecommerce");
+
+  const handleToggle = (name, fn) => () => {
+    fn(p => !p);
+    setDirty(true);
+    if (!isTerminalScope && !isProductScope) {
+      setPendingToggle(name);
+      setShowApplyModal(true);
+    }
+  };
+
+  const save = () => {
+    setSaving(true);
+    setTimeout(() => { setSaving(false); setDirty(false); setToast({ msg: "Payment configuration updated.", type: "success" }); }, 1500);
+  };
+
+  const scopeDesc = isTerminalScope
+    ? <>Viewing settings for <strong>{scopedTerminal.name}</strong>. Changes here apply to this terminal only.</>
+    : isProductScope
+    ? <>Viewing settings for your <strong>E-commerce</strong> product ({ecomStore?.name}). Changes here apply to your online checkout only.</>
+    : "These settings apply to all your stores and products. You can customise them for a specific store or product.";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", position: "relative" }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <TopBar title="Payment and fee configuration" onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 0 0" }}>
+        <div style={{ padding: "0 16px 12px", fontSize: 13, color: T.color.secondary, lineHeight: 1.45 }}>
+          {scopeDesc}
+        </div>
+        {isTerminalScope && (
+          <div style={{ margin: "0 12px 12px", padding: "10px 14px", borderRadius: T.radius.md, background: T.color.infoBg, display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: T.color.info }}>
+            <span>{I.terminal}</span>
+            <div style={{ flex: 1 }}><strong>{scopedTerminal.name}</strong> {"\u00b7"} {scopedTerminal.store}</div>
+            <button onClick={() => { setScope("company"); setAmex(true); }} style={{ fontSize: 12, fontWeight: 600, color: T.color.info, background: "none", border: "none", cursor: "pointer", fontFamily: T.font, textDecoration: "underline" }}>View company</button>
+          </div>
+        )}
+        {isProductScope && (
+          <div style={{ margin: "0 12px 12px", padding: "10px 14px", borderRadius: T.radius.md, background: T.color.infoBg, display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: T.color.info }}>
+            <span>{I.cart}</span>
+            <div style={{ flex: 1 }}><strong>E-commerce</strong> {"\u00b7"} {ecomStore?.name}</div>
+            <button onClick={() => { setScope("company"); setAmex(true); }} style={{ fontSize: 12, fontWeight: 600, color: T.color.info, background: "none", border: "none", cursor: "pointer", fontFamily: T.font, textDecoration: "underline" }}>View company</button>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 8, padding: "0 16px 16px", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <FilterChip label="Company (default)" active={scope === "company"} onClick={() => { setScope("company"); setAmex(true); }} />
+          {STORES.map(s => <FilterChip key={s} label={s} active={scope === s} onClick={() => setScope(s)} />)}
+          <FilterChip label="E-commerce" active={scope === "ecommerce"} onClick={() => setScope("ecommerce")} />
+          {activeTerminals.map(t => <FilterChip key={t.id} label={t.name} active={scope === `terminal-${t.id}`} onClick={() => { setScope(`terminal-${t.id}`); if (t.overrides?.amex !== undefined) setAmex(t.overrides.amex); else setAmex(true); }} />)}
+        </div>
+
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: T.color.secondary, marginBottom: 14 }}>Card payments</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}><div style={{ display: "flex", gap: 4, alignItems: "center" }}><CardLogo network="visa" /><CardLogo network="mc" /></div><span style={{ fontSize: 15, fontWeight: 500 }}>Visa & Mastercard</span></div>
+              <Toggle on={true} disabled />
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, paddingBottom: 10, lineHeight: 1.4 }}>{"Included in your plan \u00b7 1.25% + \u00a30.02"}</div>
+            <div style={{ height: 1, background: T.color.borderLight }} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0 4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}><CardLogo network="amex" /><span style={{ fontSize: 15, fontWeight: 500 }}>American Express</span></div>
+              <Toggle on={amex} onToggle={handleToggle("Amex", setAmex)} />
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, paddingBottom: 10, lineHeight: 1.4 }}>+0.3% on top of acquiring fee</div>
+            <div style={{ height: 1, background: T.color.borderLight }} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0 4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}><CardLogo network="diners" /><span style={{ fontSize: 15, fontWeight: 500 }}>Diners Club</span></div>
+              <Toggle on={diners} onToggle={handleToggle("Diners Club", setDiners)} />
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, paddingBottom: 10, lineHeight: 1.4 }}>+0.4% on top of acquiring fee</div>
+            <div style={{ height: 1, background: T.color.borderLight }} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0 4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}><CardLogo network="discover" /><span style={{ fontSize: 15, fontWeight: 500 }}>Discover</span></div>
+              <Toggle on={discover} onToggle={handleToggle("Discover", setDiscover)} />
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, paddingBottom: 10, lineHeight: 1.4 }}>+0.35% on top of acquiring fee</div>
+            <div style={{ height: 1, background: T.color.borderLight }} />
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0 4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}><CardLogo network="cup" /><span style={{ fontSize: 15, fontWeight: 500 }}>China UnionPay</span></div>
+              <Toggle on={cup} onToggle={handleToggle("China UnionPay", setCup)} />
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, paddingBottom: 4, lineHeight: 1.4 }}>+0.5% on top of acquiring fee</div>
+          </div>
+        </Card>
+
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: T.color.secondary, marginBottom: 14 }}>Enhance your sales</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0 4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ color: T.color.secondary }}>{I.globe}</span><span style={{ fontSize: 15, fontWeight: 500 }}>Dynamic Currency Conversion</span></div>
+              <Toggle on={dcc} onToggle={handleToggle("DCC", setDcc)} />
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, paddingBottom: 4, lineHeight: 1.4 }}>Let international customers pay in their home currency. Fee: 3.5%</div>
+          </div>
+        </Card>
+
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: T.color.secondary, marginBottom: 14 }}>Local meal vouchers</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ color: T.color.secondary }}>{I.food}</span>
+              <Badge type="delivered">Not set up</Badge>
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.45, marginBottom: 10 }}>{"Meal voucher activation requires submitting details to providers. This typically takes 3\u20135 working days per terminal."}</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: T.color.accent, cursor: "pointer" }} onClick={() => nav("mealVoucher")}>{"How to set up local meal vouchers \u203A"}</div>
+          </div>
+        </Card>
+
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: T.color.secondary, marginBottom: 10 }}>Your products</div>
+            {!hasOverrides && <div style={{ fontSize: 13, color: T.color.secondary, marginBottom: 12 }}>All products match company settings</div>}
+            {hasOverrides && <div style={{ fontSize: 13, color: T.color.warning, marginBottom: 12 }}>Some of your products use custom settings that differ from your company default.</div>}
+            {/* Terminals */}
+            {activeTerminals.map((t, i) => {
+              const hasDiff = !!t.overrides;
+              const overrideLabels = t.overrides ? Object.entries(t.overrides).map(([k, v]) => `${k}: ${v === false ? "off" : v}`).join(" \u00b7 ") : null;
+              return (
+                <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: `1px solid ${T.color.borderLight}`, cursor: "pointer" }}
+                  onClick={() => { setScope(`terminal-${t.id}`); if (t.overrides?.amex !== undefined) setAmex(t.overrides.amex); else setAmex(true); }}>
+                  <div style={{ width: 32, height: 32, borderRadius: T.radius.sm, display: "flex", alignItems: "center", justifyContent: "center", background: hasDiff ? T.color.warningBg : T.color.positiveBg, color: hasDiff ? T.color.warning : T.color.positive, flexShrink: 0 }}>{I.terminal}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500 }}>{t.name}</div>
+                    <div style={{ fontSize: 12, color: T.color.secondary }}>{t.store}</div>
+                    {hasDiff && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                        <span style={{ fontSize: 11, fontWeight: 500, padding: "1px 8px", borderRadius: T.radius.full, background: T.color.warningBg, color: T.color.warning }}>Different from company</span>
+                        <span style={{ fontSize: 11, color: T.color.secondary }}>{overrideLabels}</span>
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ color: T.color.tertiary, flexShrink: 0 }}>{I.chev}</span>
+                </div>
+              );
+            })}
+            {/* E-commerce — always active */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: `1px solid ${T.color.borderLight}`, cursor: "pointer" }} onClick={() => setScope("ecommerce")}>
+              <div style={{ width: 32, height: 32, borderRadius: T.radius.sm, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(21,101,192,0.1)", color: T.color.info, flexShrink: 0 }}>{I.cart}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 500 }}>E-commerce</div>
+                <div style={{ fontSize: 12, color: T.color.secondary }}>Online checkout</div>
+              </div>
+              <Badge type="active">Active</Badge>
+              <span style={{ color: T.color.tertiary, flexShrink: 0 }}>{I.chev}</span>
+            </div>
+            {/* Payment Links — only if active */}
+            {payLinksActive && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: `1px solid ${T.color.borderLight}` }}>
+                <div style={{ width: 32, height: 32, borderRadius: T.radius.sm, display: "flex", alignItems: "center", justifyContent: "center", background: T.color.positiveBg, color: T.color.positive, flexShrink: 0 }}>{I.link}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500 }}>Payment Links</div>
+                  <div style={{ fontSize: 12, color: T.color.secondary }}>Send payment links to customers</div>
+                </div>
+                <Badge type="active">Active</Badge>
+              </div>
+            )}
+            {/* Tap — always active */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: `1px solid ${T.color.borderLight}` }}>
+              <div style={{ width: 32, height: 32, borderRadius: T.radius.sm, display: "flex", alignItems: "center", justifyContent: "center", background: T.color.positiveBg, color: T.color.positive, flexShrink: 0 }}>{I.phone}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 500 }}>Tap</div>
+                <div style={{ fontSize: 12, color: T.color.secondary }}>Contactless on your phone</div>
+              </div>
+              <Badge type="active">Active</Badge>
+            </div>
+            {/* Manual Entry — if active or pending */}
+            {motoActive && (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: `1px solid ${T.color.borderLight}` }}>
+                <div style={{ width: 32, height: 32, borderRadius: T.radius.sm, display: "flex", alignItems: "center", justifyContent: "center", background: motoActive === "active" ? T.color.positiveBg : T.color.warningBg, color: motoActive === "active" ? T.color.positive : T.color.warning, flexShrink: 0 }}>{I.phone}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500 }}>Manual Entry (MOTO)</div>
+                  <div style={{ fontSize: 12, color: T.color.secondary }}>Key in card details on terminal</div>
+                </div>
+                <Badge type={motoActive === "active" ? "active" : "pending_review"}>{motoActive === "active" ? "Active" : "Pending review"}</Badge>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        <div style={{ padding: "8px 12px" }}>
+          <PrimaryBtn label={saving ? "Saving\u2026" : "Save changes"} onClick={dirty && !saving ? save : undefined} disabled={!dirty || saving} />
+          {dirty && !saving && <SecondaryBtn label="Discard" onClick={() => { setAmex(true); setDiners(false); setDiscover(false); setCup(false); setDcc(true); setMoto(false); setDirty(false); }} />}
+        </div>
+        <div style={{ height: 16 }} />
+      </div>
+
+      <Sheet open={showApplyModal} onClose={() => { setShowApplyModal(false); setPendingToggle(null); }}>
+        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Apply this change</div>
+        <div style={{ fontSize: 14, color: T.color.secondary, marginBottom: 20, lineHeight: 1.5 }}>You're changing <strong>{pendingToggle}</strong>. Where should this apply?</div>
+        <div style={{ marginBottom: 16 }}>
+          {[{ value: "all", label: "All products", desc: "Apply company-wide to all active products and devices" },
+            { value: "specific", label: "Specific products", desc: "Choose which products to update" }].map(opt => (
+            <div key={opt.value} onClick={() => setApplyChoice(opt.value)}
+              style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: T.radius.md, border: `1.5px solid ${applyChoice === opt.value ? T.color.primary : T.color.borderMed}`, background: applyChoice === opt.value ? T.color.bgElevated : T.color.bgDefault, cursor: "pointer", marginBottom: 8 }}>
+              <div style={{ width: 20, height: 20, borderRadius: 10, border: `2px solid ${applyChoice === opt.value ? T.color.primary : T.color.borderMed}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {applyChoice === opt.value && <div style={{ width: 10, height: 10, borderRadius: 5, background: T.color.primary }} />}
+              </div>
+              <div><div style={{ fontSize: 15, fontWeight: 500 }}>{opt.label}</div><div style={{ fontSize: 13, color: T.color.secondary }}>{opt.desc}</div></div>
+            </div>
+          ))}
+        </div>
+        {applyChoice === "specific" && (
+          <Card style={{ margin: "0 0 12px", border: `1px solid ${T.color.borderMed}` }}>
+            <div style={{ padding: "4px 0" }}>
+              {activeTerminals.map((t, i) => (
+                <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderBottom: i < activeTerminals.length - 1 ? `1px solid ${T.color.borderLight}` : "none" }}>
+                  <input type="checkbox" defaultChecked style={{ width: 18, height: 18, accentColor: T.color.primary }} />
+                  <div><div style={{ fontSize: 14, fontWeight: 500 }}>{t.name}</div><div style={{ fontSize: 12, color: T.color.secondary }}>{t.store}</div></div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+        <PrimaryBtn label="Confirm" onClick={() => { setShowApplyModal(false); setPendingToggle(null); }} />
+        <SecondaryBtn label="Cancel" onClick={() => { setShowApplyModal(false); setPendingToggle(null); }} />
+      </Sheet>
+    </div>
+  );
+}
+
+function MealVoucherScreen({ goBack, terminals }) {
+  const [selectedStore, setSelectedStore] = useState(STORES[0]);
+  const [selectedTerminal, setSelectedTerminal] = useState(null);
+  const [submitted, setSubmitted] = useState({});
+  const storeTerminals = terminals.filter(t => t.store === selectedStore && (t.status === "active" || t.status === "delivered"));
+
+  if (selectedTerminal) {
+    const t = terminals.find(x => x.id === selectedTerminal);
+    const isSubmitted = submitted[selectedTerminal];
+    return (
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
+        <TopBar title="Meal voucher setup" onBack={() => setSelectedTerminal(null)} olive />
+        <div style={{ flex: 1, overflowY: "auto", padding: "12px 0 0" }}>
+          <Card>
+            <div style={{ padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                <div style={{ width: 40, height: 40, borderRadius: T.radius.md, background: T.color.positiveBg, display: "flex", alignItems: "center", justifyContent: "center", color: T.color.positive }}>{I.terminal}</div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 600 }}>{t?.name}</div>
+                  <div style={{ fontSize: 13, color: T.color.secondary }}>{t?.model} {"\u00b7"} {t?.store}</div>
+                </div>
+              </div>
+              {isSubmitted ? (
+                <div style={{ padding: "20px 0", textAlign: "center" }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 24, background: T.color.positiveBg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+                    <span style={{ color: T.color.positive }}>{I.check}</span>
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Request submitted</div>
+                  <div style={{ fontSize: 14, color: T.color.secondary, lineHeight: 1.45 }}>{"Meal voucher activation typically takes 3\u20135 working days. We'll notify you when it's ready."}</div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>Required documents</div>
+                  {[
+                    { name: "Business registration certificate", desc: "Company registration document" },
+                    { name: "Tax identification number", desc: "VAT or tax ID certificate" },
+                    { name: "Bank account details", desc: "IBAN or bank statement" },
+                    { name: "Authorised signatory ID", desc: "Passport or national ID" },
+                  ].map((doc, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: i < 3 ? `1px solid ${T.color.borderLight}` : "none" }}>
+                      <div style={{ width: 36, height: 36, borderRadius: T.radius.md, background: T.color.bgElevated, display: "flex", alignItems: "center", justifyContent: "center", color: T.color.secondary, flexShrink: 0 }}>{I.doc}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 500 }}>{doc.name}</div>
+                        <div style={{ fontSize: 12, color: T.color.secondary }}>{doc.desc}</div>
+                      </div>
+                      <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: T.radius.sm, border: `1px solid ${T.color.borderMed}`, background: T.color.bgDefault, fontSize: 12, fontWeight: 500, fontFamily: T.font, cursor: "pointer", color: T.color.primary }}>
+                        {I.upload} Upload
+                      </button>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </Card>
+          {!isSubmitted && (
+            <div style={{ padding: "8px 12px" }}>
+              <PrimaryBtn label="Submit request" onClick={() => setSubmitted(p => ({ ...p, [selectedTerminal]: true }))} />
+            </div>
+          )}
+          <div style={{ height: 16 }} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
+      <TopBar title="Meal vouchers" onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 0 0" }}>
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: T.radius.md, background: T.color.bannerGrad, display: "flex", alignItems: "center", justifyContent: "center" }}>{I.food}</div>
+              <div style={{ fontSize: 18, fontWeight: 700 }}>Local meal voucher setup</div>
+            </div>
+            <div style={{ fontSize: 14, color: T.color.secondary, lineHeight: 1.55, marginBottom: 12 }}>
+              To accept local meal vouchers, you need to submit registration documents to the meal voucher providers for each terminal individually. The activation process typically takes <strong>{"3\u20135 working days"}</strong> per terminal.
+            </div>
+            <div style={{ fontSize: 14, color: T.color.secondary, lineHeight: 1.55, marginBottom: 8 }}>
+              <strong>What you'll need:</strong> Business registration, tax ID, bank details, and signatory ID for each terminal you want to activate.
+            </div>
+            <div style={{ fontSize: 13, padding: "8px 12px", borderRadius: T.radius.sm, background: T.color.warningBg, color: T.color.warning, lineHeight: 1.45 }}>
+              {"Each terminal needs a separate submission \u2014 you cannot activate meal vouchers in bulk."}
+            </div>
+          </div>
+        </Card>
+        <div style={{ display: "flex", gap: 8, padding: "4px 16px 12px", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          {STORES.map(s => <FilterChip key={s} label={s} active={selectedStore === s} onClick={() => setSelectedStore(s)} />)}
+        </div>
+        <Card>
+          <div style={{ padding: "0 4px" }}>
+            {storeTerminals.length === 0 && <div style={{ padding: 24, textAlign: "center", fontSize: 14, color: T.color.secondary }}>No eligible terminals in this store</div>}
+            {storeTerminals.map((t, i) => {
+              const done = submitted[t.id];
+              return (
+                <ListRow key={t.id} icon={I.terminal} iconBg={done ? T.color.positiveBg : T.color.bgElevated}
+                  label={t.name} desc={t.model}
+                  last={i === storeTerminals.length - 1}
+                  onClick={() => setSelectedTerminal(t.id)}
+                  trailing={done
+                    ? <Badge type="active">Submitted</Badge>
+                    : <Badge type="delivered">Not set up</Badge>}
+                />
+              );
+            })}
+          </div>
+        </Card>
+        <div style={{ height: 16 }} />
+      </div>
+    </div>
+  );
+}
+
+// ── STORES LIST ──────────────────────────────────────────────
+function StoresScreen({ nav, goBack }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
+      <TopBar title="Stores" onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 0 0" }}>
+        <div style={{ padding: "0 16px 12px", fontSize: 13, color: T.color.secondary }}>{ALL_STORES.length} stores linked to your account</div>
+        <Card>
+          <div style={{ padding: "0 4px" }}>
+            {ALL_STORES.map((s, i) => (
+              <ListRow key={s.id}
+                icon={s.type === "ecommerce" ? I.cart : I.store}
+                iconBg={s.type === "ecommerce" ? "rgba(21,101,192,0.1)" : T.color.bgElevated}
+                label={s.name}
+                desc={s.type === "ecommerce" ? s.address : s.address.split(",")[0]}
+                last={i === ALL_STORES.length - 1}
+                onClick={() => nav("storeDetail", s.id)}
+                trailing={<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {s.type === "ecommerce" && <Badge type="active">Online</Badge>}
+                  <span style={{ color: T.color.tertiary }}>{I.chev}</span>
+                </div>}
+              />
+            ))}
+          </div>
+        </Card>
+        <div style={{ height: 16 }} />
+      </div>
+    </div>
+  );
+}
+
+// ── STORE DETAIL (Online Shop) ──────────────────────────────
+function StoreDetailScreen({ nav, goBack, storeId }) {
+  const store = ALL_STORES.find(s => s.id === storeId) || ALL_STORES[0];
+  const isEcom = store.type === "ecommerce";
+  const [email, setEmail] = useState(store.email);
+  const [phone, setPhone] = useState(store.phone);
+  const [editEmail, setEditEmail] = useState(false);
+  const [editPhone, setEditPhone] = useState(false);
+  const [privacyUrl, setPrivacyUrl] = useState(store.privacyUrl || "");
+  const [termsUrl, setTermsUrl] = useState(store.termsUrl || "");
+  const [heading, setHeading] = useState(store.heading || "");
+  const [subheading, setSubheading] = useState(store.subheading || "");
+  const [logoUploaded, setLogoUploaded] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const HEADING_MAX = 40;
+  const SUB_MAX = 60;
+
+  const FieldRow = ({ label, value }) => (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 0", fontSize: 15 }}>
+      <span style={{ color: T.color.secondary }}>{label}</span>
+      <span style={{ fontWeight: 500, textAlign: "right", maxWidth: "55%", wordBreak: "break-word" }}>{value}</span>
+    </div>
+  );
+
+  const EditableField = ({ label, value, onChange, editing, setEditing, type }) => (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0" }}>
+      <span style={{ fontSize: 15, color: T.color.secondary }}>{label}</span>
+      {editing ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <input value={value} onChange={e => onChange(e.target.value)} type={type || "text"} autoFocus
+            style={{ fontSize: 14, fontWeight: 500, border: "none", borderBottom: `2px solid ${T.color.primary}`, background: "transparent", outline: "none", fontFamily: T.font, padding: "2px 4px", width: 180, textAlign: "right", color: T.color.primary }} />
+          <button onClick={() => { setEditing(false); setToast({ msg: `${label} updated`, type: "success" }); }}
+            style={{ width: 28, height: 28, borderRadius: 14, background: T.color.positiveBg, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ color: T.color.positive }}>{I.check}</span>
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }} onClick={() => setEditing(true)}>
+          <span style={{ fontSize: 14, fontWeight: 500, textAlign: "right", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span>
+          <span style={{ color: T.color.tertiary, flexShrink: 0 }}>{I.edit}</span>
+        </div>
+      )}
+    </div>
+  );
+
+  const CharInput = ({ label, value, onChange, max, placeholder, hint }) => (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6, color: T.color.primary }}>{label}</div>
+      <input value={value} onChange={e => { if (e.target.value.length <= max) onChange(e.target.value); }} placeholder={placeholder}
+        style={{ width: "100%", padding: "10px 14px", borderRadius: T.radius.md, border: `1.5px solid ${value.length >= max ? T.color.warning : T.color.borderMed}`, fontSize: 15, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box" }} />
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+        <span style={{ fontSize: 12, color: T.color.tertiary, lineHeight: 1.4, flex: 1, marginRight: 8 }}>{hint}</span>
+        <span style={{ fontSize: 11, color: value.length > max ? T.color.negative : T.color.tertiary, flexShrink: 0 }}>{value.length}/{max}</span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", position: "relative" }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <TopBar title={store.name} onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 0 0" }}>
+
+        {/* Logo */}
+        <div style={{ textAlign: "center", padding: "8px 16px 16px" }}>
+          <div onClick={() => { setLogoUploaded(true); setToast({ msg: "Logo updated", type: "success" }); }}
+            style={{ width: 80, height: 80, borderRadius: T.radius.lg, background: logoUploaded ? "linear-gradient(135deg,#f8d0c0,#f0a090)" : T.color.bgElevated, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px", cursor: "pointer", border: `2px dashed ${logoUploaded ? "transparent" : T.color.borderMed}`, position: "relative", overflow: "hidden" }}>
+            {logoUploaded
+              ? <span style={{ fontSize: 36 }}>{"\u2615"}</span>
+              : <span style={{ color: T.color.secondary }}>{I.image}</span>}
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,.45)", padding: "3px 0", textAlign: "center" }}>
+              <span style={{ fontSize: 9, color: "#fff", fontWeight: 600 }}>CHANGE</span>
+            </div>
+          </div>
+          <div style={{ fontSize: 12, color: T.color.tertiary }}>Tap logo to upload</div>
+        </div>
+
+        {/* Store info */}
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Store details</div>
+            <FieldRow label="Name" value={store.name} />
+            <FieldRow label="Short ID" value={store.shortId} />
+            <FieldRow label="Business activity" value={store.activity} />
+            <FieldRow label="Address" value={store.address} />
+          </div>
+        </Card>
+
+        {/* Editable contact */}
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Contact</div>
+            <EditableField label="Email" value={email} onChange={setEmail} editing={editEmail} setEditing={setEditEmail} type="email" />
+            <EditableField label="Phone" value={phone} onChange={setPhone} editing={editPhone} setEditing={setEditPhone} type="tel" />
+          </div>
+        </Card>
+
+        {/* E-commerce customization (only for online store) */}
+        {isEcom && (
+          <>
+            <SectionLabel>Customise Policy, terms and conditions</SectionLabel>
+            <Card>
+              <div style={{ padding: 16 }}>
+                <CharInput label="Message on checkout" value={heading} onChange={setHeading} max={HEADING_MAX} placeholder="Eg: Call on 020 7580 2725 if you have any issue" hint="This message will be displayed on the checkout page" />
+                <CharInput label="Message on receipt" value={subheading} onChange={setSubheading} max={SUB_MAX} placeholder="Eg: Thank you for buying with us" hint="This message will be displayed on the receipt after payment." />
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: T.color.primary, marginBottom: 6 }}>Privacy policy URL</div>
+                  <input value={privacyUrl} onChange={e => setPrivacyUrl(e.target.value)} placeholder="https://mypage.com/privacypolicy"
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: T.radius.md, border: `1.5px solid ${T.color.borderMed}`, fontSize: 14, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box" }} />
+                  <div style={{ fontSize: 12, color: T.color.tertiary, marginTop: 4, lineHeight: 1.4 }}>Link to your privacy policy. This will be shown to customers on the checkout page.</div>
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: T.color.primary, marginBottom: 6 }}>Terms and conditions URL</div>
+                  <input value={termsUrl} onChange={e => setTermsUrl(e.target.value)} placeholder="https://mypage.com/termsandconditions"
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: T.radius.md, border: `1.5px solid ${T.color.borderMed}`, fontSize: 14, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box" }} />
+                  <div style={{ fontSize: 12, color: T.color.tertiary, marginTop: 4, lineHeight: 1.4 }}>Link to your terms and conditions. This will be shown to customers on the checkout page.</div>
+                </div>
+              </div>
+            </Card>
+            <div style={{ padding: "4px 12px 8px" }}>
+              <button onClick={() => nav("checkoutPreview", JSON.stringify({ heading, subheading, privacyUrl, termsUrl }))}
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "14px 20px", borderRadius: T.radius.md, fontSize: 16, fontWeight: 600, fontFamily: T.font, cursor: "pointer", border: `1.5px solid ${T.color.borderMed}`, background: T.color.bgDefault, color: T.color.primary }}>
+                {I.eye} Preview online checkout
+              </button>
+            </div>
+          </>
+        )}
+
+        <div style={{ height: 24 }} />
+      </div>
+    </div>
+  );
+}
+
+// ── MANUAL ENTRY INFO SCREEN ────────────────────────────────
+function MotoInfoScreen({ nav, goBack, motoActive, setMotoActive }) {
+  const [toast, setToast] = useState(null);
+  const [showRequestFlow, setShowRequestFlow] = useState(false);
+  const [useCase, setUseCase] = useState("");
+  const [historyUploaded, setHistoryUploaded] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const canSubmit = useCase.trim().length > 10 && historyUploaded;
+
+  const handleSubmit = () => {
+    setSubmitting(true);
+    setTimeout(() => {
+      setSubmitting(false);
+      setShowRequestFlow(false);
+      setMotoActive("pending");
+      setToast({ msg: "Request submitted \u2014 we'll review and get back to you", type: "success" });
+    }, 1500);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", position: "relative" }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <TopBar title="Manual Entry (MOTO)" onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 0 0" }}>
+
+        {/* Hero */}
+        <div style={{ margin: "0 12px 16px", borderRadius: T.radius.lg, background: "linear-gradient(135deg, #e3f2fd, #bbdefb)", padding: "32px 24px", textAlign: "center" }}>
+          <div style={{ width: 72, height: 72, borderRadius: T.radius.xl, background: "rgba(21,101,192,0.15)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <span style={{ fontSize: 36 }}>{"\uD83D\uDCDE"}</span>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 6, color: T.color.primary }}>Manual Entry Payments</div>
+          <div style={{ fontSize: 14, color: T.color.secondary, lineHeight: 1.5 }}>Key card details directly into your terminal to accept phone and mail order payments.</div>
+        </div>
+
+        {/* Payment Links nudge */}
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: T.radius.md, background: T.color.positiveBg, display: "flex", alignItems: "center", justifyContent: "center", color: T.color.positive, flexShrink: 0 }}>{I.link}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Can you send a payment link instead?</div>
+                <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.5 }}>Payment Links are the quickest and most secure way to get paid remotely. The customer pays on a secure checkout page {"\u2014"} no card details need to be shared with you.</div>
+                <button onClick={() => nav("payLinksInfo")} style={{ marginTop: 10, fontSize: 13, fontWeight: 600, color: T.color.accent, background: "none", border: "none", cursor: "pointer", fontFamily: T.font, padding: 0, textDecoration: "underline" }}>
+                  Learn about Payment Links {"\u203A"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* How it works */}
+        <SectionLabel>How it works</SectionLabel>
+        <Card>
+          <div style={{ padding: 16 }}>
+            {[
+              { step: "1", title: "Customer calls or emails", desc: "Your customer contacts you with their order and wants to pay by card." },
+              { step: "2", title: "Enter card details on terminal", desc: "You key in the customer's card number, expiry date, and CVV directly on your terminal." },
+              { step: "3", title: "Payment processed securely", desc: "The payment is processed instantly. Both you and your customer receive a confirmation." },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", gap: 14, padding: "12px 0", borderBottom: i < 2 ? `1px solid ${T.color.borderLight}` : "none" }}>
+                <div style={{ width: 32, height: 32, borderRadius: T.radius.full, background: T.color.infoBg, color: T.color.info, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{item.step}</div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 2 }}>{item.title}</div>
+                  <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.45 }}>{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Pricing */}
+        <SectionLabel>Pricing</SectionLabel>
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+              <span style={{ fontSize: 15, color: T.color.secondary }}>Surcharge</span>
+              <span style={{ fontSize: 18, fontWeight: 700 }}>+0.5%</span>
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.4 }}>Applied on top of your standard acquiring fee for each manual entry transaction. No monthly fee.</div>
+          </div>
+        </Card>
+
+        {/* CTA area */}
+        <div style={{ padding: "12px 12px 8px" }}>
+          {motoActive === "active" ? (
+            <div style={{ textAlign: "center", padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: T.color.positive, fontSize: 16, fontWeight: 600 }}>
+                {I.check} Manual Entry is active
+              </div>
+              <button onClick={() => nav("payConfig", "moto")} style={{ marginTop: 12, fontSize: 14, fontWeight: 600, color: T.color.accent, background: "none", border: "none", cursor: "pointer", fontFamily: T.font, textDecoration: "underline" }}>
+                Go to payment configuration {"\u203A"}
+              </button>
+            </div>
+          ) : motoActive === "pending" ? (
+            <Card style={{ margin: 0, borderLeft: `3px solid ${T.color.warning}` }}>
+              <div style={{ padding: 16, display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <div style={{ width: 36, height: 36, borderRadius: T.radius.md, background: T.color.warningBg, display: "flex", alignItems: "center", justifyContent: "center", color: T.color.warning, flexShrink: 0 }}>{I.clock}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Your request is under review</div>
+                  <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.5 }}>We're reviewing your Manual Entry request. This usually takes 2{"\u2013"}3 working days. We'll notify you once a decision is made.</div>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <PrimaryBtn label="Request Manual Entry" onClick={() => setShowRequestFlow(true)} />
+          )}
+        </div>
+        <div style={{ height: 24 }} />
+      </div>
+
+      {/* Request flow sheet */}
+      <Sheet open={showRequestFlow} onClose={() => setShowRequestFlow(false)}>
+        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>Request Manual Entry</div>
+        <div style={{ fontSize: 13, color: T.color.secondary, marginBottom: 20, lineHeight: 1.5 }}>To determine your eligibility, we need to understand your use case and review your transaction history.</div>
+
+        {/* Use case */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6, color: T.color.primary }}>Why do you need Manual Entry? <span style={{ color: T.color.negative }}>*</span></div>
+          <textarea value={useCase} onChange={e => setUseCase(e.target.value)} placeholder="Describe your use case..." rows={4}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: T.radius.md, border: `1.5px solid ${T.color.borderMed}`, fontSize: 14, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box", resize: "vertical", lineHeight: 1.5 }} />
+          <div style={{ fontSize: 12, color: T.color.tertiary, marginTop: 4 }}>Be specific about why a payment link wouldn't work for your customers.</div>
+        </div>
+
+        {/* Transaction history upload */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6, color: T.color.primary }}>6 months of MOTO transaction history <span style={{ color: T.color.negative }}>*</span></div>
+          <div style={{ fontSize: 13, color: T.color.secondary, marginBottom: 10, lineHeight: 1.5 }}>Upload a statement or report from your previous acquirer showing at least 6 months of MOTO transaction history. This is required to assess your eligibility.</div>
+          {historyUploaded ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: T.radius.md, background: T.color.positiveBg, border: `1.5px solid rgba(94,165,0,0.2)` }}>
+              <span style={{ color: T.color.positive }}>{I.check}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: T.color.positive }}>moto_history_oct23_mar24.pdf</div>
+                <div style={{ fontSize: 12, color: T.color.secondary }}>Uploaded just now</div>
+              </div>
+              <button onClick={() => setHistoryUploaded(false)} style={{ fontSize: 12, fontWeight: 500, color: T.color.secondary, background: "none", border: "none", cursor: "pointer", fontFamily: T.font, textDecoration: "underline" }}>Remove</button>
+            </div>
+          ) : (
+            <button onClick={() => setHistoryUploaded(true)}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "14px 20px", borderRadius: T.radius.md, fontSize: 15, fontWeight: 500, fontFamily: T.font, cursor: "pointer", border: `1.5px dashed ${T.color.borderMed}`, background: T.color.bgElevated, color: T.color.primary }}>
+              {I.upload} Upload transaction history
+            </button>
+          )}
+          <div style={{ fontSize: 12, color: T.color.tertiary, marginTop: 6, lineHeight: 1.4 }}>Accepted formats: PDF, CSV, XLS. Max file size: 10 MB.</div>
+        </div>
+
+        {/* Review notice */}
+        <div style={{ padding: "10px 14px", borderRadius: T.radius.md, background: T.color.warningBg, marginBottom: 20 }}>
+          <div style={{ fontSize: 13, color: T.color.warning, lineHeight: 1.5, display: "flex", alignItems: "flex-start", gap: 8 }}>
+            <span style={{ flexShrink: 0, marginTop: 1 }}>{I.shield}</span>
+            <span>Manual entry carries a higher fraud risk. Requests are reviewed within 2{"\u2013"}3 working days and may not be approved for all merchants.</span>
+          </div>
+        </div>
+
+        <PrimaryBtn label={submitting ? "Submitting\u2026" : "Submit request"} onClick={canSubmit && !submitting ? handleSubmit : undefined} disabled={!canSubmit || submitting} />
+        <SecondaryBtn label="Cancel" onClick={() => setShowRequestFlow(false)} />
+      </Sheet>
+    </div>
+  );
+}
+
+// ── PAYMENT LINKS INFO SCREEN ───────────────────────────────
+function PayLinksInfoScreen({ nav, goBack, payLinksActive, setPayLinksActive }) {
+  const [toast, setToast] = useState(null);
+  const [animStep, setAnimStep] = useState(0);
+
+  // Cycle through animation steps
+  useEffect(() => {
+    const interval = setInterval(() => setAnimStep(s => (s + 1) % 4), 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleActivate = () => {
+    setPayLinksActive(true);
+    setToast({ msg: "Payment Links activated", type: "success" });
+  };
+
+  const animSteps = [
+    { label: "Create link", desc: "Set amount & description", icon: I.plus, bg: T.color.infoBg, fg: T.color.info },
+    { label: "Share with customer", desc: "SMS, email, or WhatsApp", icon: I.upload, bg: T.color.warningBg, fg: T.color.warning },
+    { label: "Customer pays", desc: "Secure checkout page", icon: I.lock, bg: "rgba(94,165,0,0.1)", fg: T.color.positive },
+    { label: "Money received", desc: "Instant confirmation", icon: I.check, bg: T.color.positiveBg, fg: T.color.positive },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", position: "relative" }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <TopBar title="Payment Links" onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 0 0" }}>
+
+        {/* Animated illustration */}
+        <div style={{ margin: "0 12px 16px", borderRadius: T.radius.lg, background: "linear-gradient(135deg, #f5f3d0, #e8e4a0)", padding: "24px 20px", overflow: "hidden" }}>
+          <div style={{ textAlign: "center", marginBottom: 20 }}>
+            <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Send a link. Get paid.</div>
+            <div style={{ fontSize: 13, color: T.color.secondary }}>No website or terminal needed</div>
+          </div>
+          {/* Animated step indicator */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+            {animSteps.map((_, i) => (
+              <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= animStep ? T.color.primary : "rgba(0,0,0,0.1)", transition: "background .4s" }} />
+            ))}
+          </div>
+          {/* Current step card */}
+          <div style={{ background: T.color.bgDefault, borderRadius: T.radius.md, padding: 16, display: "flex", alignItems: "center", gap: 14, boxShadow: "0 4px 16px rgba(0,0,0,0.06)", transition: "all .3s" }}>
+            <div style={{ width: 48, height: 48, borderRadius: T.radius.md, background: animSteps[animStep].bg, display: "flex", alignItems: "center", justifyContent: "center", color: animSteps[animStep].fg, flexShrink: 0 }}>
+              {animSteps[animStep].icon}
+            </div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 2 }}>{animSteps[animStep].label}</div>
+              <div style={{ fontSize: 13, color: T.color.secondary }}>{animSteps[animStep].desc}</div>
+            </div>
+          </div>
+          {/* Mock payment link preview */}
+          <div style={{ marginTop: 16, background: T.color.bgDefault, borderRadius: T.radius.md, padding: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: "linear-gradient(135deg,#f8d0c0,#f0a090)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>{"\u2615"}</div>
+              <span style={{ fontSize: 13, fontWeight: 600 }}>CoffeeBrain</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ fontSize: 12, color: T.color.secondary }}>Amount due</div>
+                <div style={{ fontSize: 20, fontWeight: 700 }}>{"\u00a3"}24.50</div>
+              </div>
+              <div style={{ padding: "8px 16px", borderRadius: T.radius.md, background: T.color.primary, color: "#fff", fontSize: 13, fontWeight: 600 }}>Pay now</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Benefits */}
+        <SectionLabel>Why use Payment Links?</SectionLabel>
+        <Card>
+          <div style={{ padding: "0 4px" }}>
+            <ListRow icon={I.link} iconBg={T.color.infoBg} label="Share anywhere" desc="Send via SMS, email, WhatsApp, or social media" />
+            <ListRow icon={I.lock} iconBg={T.color.positiveBg} label="Secure checkout" desc="Hosted payment page with SSL encryption" />
+            <ListRow icon={I.clock} iconBg={T.color.warningBg} label="Get paid faster" desc="Customers pay instantly from their phone or computer" />
+            <ListRow icon={I.doc} iconBg={T.color.bgElevated} label="Automatic tracking" desc="All payments tracked in your Teya dashboard" last />
+          </div>
+        </Card>
+
+        {/* Pricing */}
+        <SectionLabel>Pricing</SectionLabel>
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+              <span style={{ fontSize: 15, color: T.color.secondary }}>Transaction fee</span>
+              <span style={{ fontSize: 18, fontWeight: 700 }}>1.25% + {"\u00a3"}0.02</span>
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.4 }}>Same as your standard acquiring fee. No additional cost for Payment Links.</div>
+          </div>
+        </Card>
+
+        <div style={{ padding: "12px 12px 8px" }}>
+          {payLinksActive ? (
+            <div style={{ textAlign: "center", padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: T.color.positive, fontSize: 16, fontWeight: 600 }}>
+                {I.check} Payment Links are active
+              </div>
+              <button onClick={() => nav("payLinksConfig")} style={{ marginTop: 12, fontSize: 14, fontWeight: 600, color: T.color.accent, background: "none", border: "none", cursor: "pointer", fontFamily: T.font, textDecoration: "underline" }}>
+                Go to Payment Links configuration {"\u203A"}
+              </button>
+            </div>
+          ) : (
+            <PrimaryBtn label="Activate Payment Links" onClick={handleActivate} />
+          )}
+        </div>
+        <div style={{ height: 24 }} />
+      </div>
+    </div>
+  );
+}
+
+// ── PAYMENT LINKS CONFIGURATION ─────────────────────────────
+function PayLinksConfigScreen({ nav, goBack }) {
+  const [defaultStore, setDefaultStore] = useState("Camden Corner");
+  const [defaultCurrency, setDefaultCurrency] = useState("\u20ac EUR");
+  const [defaultExpiry, setDefaultExpiry] = useState("Never expires");
+  const [defaultSharing, setDefaultSharing] = useState("QR code");
+  const [defaultLanguage, setDefaultLanguage] = useState("English");
+  const [toast, setToast] = useState(null);
+
+  const ConfigRow = ({ icon, label, value, options, onChange }) => {
+    const [open, setOpen] = useState(false);
+    return (
+      <>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", cursor: "pointer", borderBottom: `1px solid ${T.color.borderLight}` }}
+          onClick={() => setOpen(!open)}>
+          <div style={{ width: 40, height: 40, borderRadius: T.radius.md, background: T.color.bgElevated, display: "flex", alignItems: "center", justifyContent: "center", color: T.color.secondary, flexShrink: 0 }}>{icon}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 16, fontWeight: 500 }}>{label}</div>
+            <div style={{ fontSize: 14, color: T.color.secondary }}>{value}</div>
+          </div>
+          <span style={{ color: T.color.tertiary }}>{I.chev}</span>
+        </div>
+        {open && (
+          <div style={{ padding: "4px 16px 12px 68px", background: T.color.bgElevated }}>
+            {options.map(opt => (
+              <div key={opt} onClick={() => { onChange(opt); setOpen(false); setToast({ msg: `${label} updated to ${opt}`, type: "success" }); }}
+                style={{ padding: "10px 12px", fontSize: 14, fontWeight: opt === value ? 600 : 400, color: opt === value ? T.color.primary : T.color.secondary, cursor: "pointer", borderRadius: T.radius.sm, background: opt === value ? T.color.bgDefault : "transparent", marginBottom: 2 }}>
+                {opt === value && <span style={{ marginRight: 6, color: T.color.positive }}>{"\u2713"}</span>}{opt}
+              </div>
+            ))}
+          </div>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", position: "relative" }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <TopBar title="Configure" onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 0 0" }}>
+        <div style={{ padding: "0 16px 12px", fontSize: 13, color: T.color.secondary, lineHeight: 1.45 }}>
+          Set default values for new payment links. You can always change these when creating a link.
+        </div>
+
+        <SectionLabel>Defaults</SectionLabel>
+        <Card>
+          <ConfigRow icon={I.store} label="Default store" value={defaultStore} onChange={setDefaultStore}
+            options={["Camden Corner", "Waterloo Way", "Online Shop"]} />
+          <ConfigRow icon={<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.4"/><text x="10" y="12" textAnchor="middle" fill="currentColor" fontSize="7" fontWeight="600">{"\u20ac"}</text></svg>}
+            label="Default currency" value={defaultCurrency} onChange={setDefaultCurrency}
+            options={["\u20ac EUR", "\u00a3 GBP", "$ USD"]} />
+          <ConfigRow icon={I.clock} label="Default expiry" value={defaultExpiry} onChange={setDefaultExpiry}
+            options={["Never expires", "24 hours", "48 hours", "7 days", "30 days"]} />
+          <ConfigRow icon={<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.4"/><circle cx="10" cy="10" r="2" fill="currentColor"/><path d="M10 3V5M10 15V17M3 10H5M15 10H17" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>}
+            label="Default sharing" value={defaultSharing} onChange={setDefaultSharing}
+            options={["QR code", "SMS", "Email", "WhatsApp", "Copy link"]} />
+          <ConfigRow icon={I.globe} label="Default language" value={defaultLanguage} onChange={setDefaultLanguage}
+            options={["English", "Portuguese", "Spanish", "French", "German"]} />
+        </Card>
+
+        <SectionLabel>Checkout page</SectionLabel>
+        <Card>
+          <div style={{ padding: "0 4px" }}>
+            <ListRow icon={I.image} iconBg={T.color.bgElevated} label="Customise checkout" desc="Logo, messages, legal links" last onClick={() => nav("ecommerce")} />
+          </div>
+        </Card>
+
+        <div style={{ height: 24 }} />
+      </div>
+    </div>
+  );
+}
+
+// ── E-COMMERCE CUSTOMIZATION (from Catalogue) ───────────────
+function EcommerceScreen({ nav, goBack }) {
+  const store = ALL_STORES.find(s => s.type === "ecommerce");
+  const [heading, setHeading] = useState(store?.heading || "");
+  const [subheading, setSubheading] = useState(store?.subheading || "");
+  const [privacyUrl, setPrivacyUrl] = useState(store?.privacyUrl || "");
+  const [termsUrl, setTermsUrl] = useState(store?.termsUrl || "");
+  const [logoUploaded, setLogoUploaded] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const HEADING_MAX = 40;
+  const SUB_MAX = 60;
+
+  const CharInput = ({ label, value, onChange, max, placeholder, hint }) => (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6, color: T.color.primary }}>{label}</div>
+      <input value={value} onChange={e => { if (e.target.value.length <= max) onChange(e.target.value); }} placeholder={placeholder}
+        style={{ width: "100%", padding: "12px 14px", borderRadius: T.radius.md, border: `1.5px solid ${value.length >= max ? T.color.warning : T.color.borderMed}`, fontSize: 15, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box" }} />
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+        <span style={{ fontSize: 12, color: T.color.tertiary, lineHeight: 1.4, flex: 1, marginRight: 8 }}>{hint}</span>
+        <span style={{ fontSize: 11, color: value.length > max ? T.color.negative : T.color.tertiary, flexShrink: 0 }}>{value.length}/{max}</span>
+      </div>
+    </div>
+  );
+
+  const save = () => {
+    setSaving(true);
+    setTimeout(() => { setSaving(false); setToast({ msg: "Checkout customization saved", type: "success" }); }, 1200);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", position: "relative" }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <TopBar title="E-commerce" onBack={goBack} olive />
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 0 0" }}>
+        <div style={{ padding: "0 16px 12px", fontSize: 13, color: T.color.secondary, lineHeight: 1.45 }}>
+          Customise your online checkout experience. Your customers will see these details when paying on your website.
+        </div>
+
+        <Card>
+          <div style={{ padding: "0 4px" }}>
+            <ListRow icon={I.gear} iconBg={T.color.bannerGrad} label="Payment and fee configuration" desc="Manage accepted card schemes and payment methods for your online store" last onClick={() => nav("payConfig", "ecommerce")} />
+          </div>
+        </Card>
+
+        <SectionLabel>Store logo</SectionLabel>
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div onClick={() => { setLogoUploaded(true); setToast({ msg: "Logo updated", type: "success" }); }}
+                style={{ width: 64, height: 64, borderRadius: T.radius.lg, background: logoUploaded ? "linear-gradient(135deg,#f8d0c0,#f0a090)" : T.color.bgElevated, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: `2px dashed ${logoUploaded ? "transparent" : T.color.borderMed}`, position: "relative", overflow: "hidden", flexShrink: 0 }}>
+                {logoUploaded
+                  ? <span style={{ fontSize: 28 }}>{"\u2615"}</span>
+                  : <span style={{ color: T.color.secondary }}>{I.image}</span>}
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,.45)", padding: "2px 0", textAlign: "center" }}>
+                  <span style={{ fontSize: 8, color: "#fff", fontWeight: 600 }}>CHANGE</span>
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 2 }}>{store?.name || "Online Shop"}</div>
+                <div style={{ fontSize: 13, color: T.color.secondary, marginBottom: 6 }}>{store?.address}</div>
+                <button onClick={() => { setLogoUploaded(true); setToast({ msg: "Logo updated", type: "success" }); }}
+                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 12px", borderRadius: T.radius.full, border: `1px solid ${T.color.borderMed}`, background: T.color.bgDefault, fontSize: 12, fontWeight: 500, fontFamily: T.font, cursor: "pointer", color: T.color.primary }}>
+                  {I.upload} {logoUploaded ? "Change logo" : "Upload logo"}
+                </button>
+              </div>
+            </div>
+            <div style={{ fontSize: 12, color: T.color.tertiary, marginTop: 10, lineHeight: 1.4 }}>This logo will appear on your online checkout page. Recommended size: 200{"\u00d7"}200px.</div>
+          </div>
+        </Card>
+
+        <SectionLabel>Checkout branding</SectionLabel>
+        <Card>
+          <div style={{ padding: 16 }}>
+            <CharInput label="Message on checkout" value={heading} onChange={setHeading} max={HEADING_MAX} placeholder="Eg: Call on 020 7580 2725 if you have any issue" hint="This message will be displayed on the checkout page" />
+            <CharInput label="Message on receipt" value={subheading} onChange={setSubheading} max={SUB_MAX} placeholder="Eg: Thank you for buying with us" hint="This message will be displayed on the receipt after payment." />
+          </div>
+        </Card>
+
+        <SectionLabel>Customise Policy, terms and conditions</SectionLabel>
+        <Card>
+          <div style={{ padding: 16 }}>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.color.primary, marginBottom: 6 }}>Privacy policy URL</div>
+              <input value={privacyUrl} onChange={e => setPrivacyUrl(e.target.value)} placeholder="https://mypage.com/privacypolicy"
+                style={{ width: "100%", padding: "10px 14px", borderRadius: T.radius.md, border: `1.5px solid ${T.color.borderMed}`, fontSize: 14, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box" }} />
+              <div style={{ fontSize: 12, color: T.color.tertiary, marginTop: 4, lineHeight: 1.4 }}>Link to your privacy policy. This will be shown to customers on the checkout page.</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: T.color.primary, marginBottom: 6 }}>Terms and conditions URL</div>
+              <input value={termsUrl} onChange={e => setTermsUrl(e.target.value)} placeholder="https://mypage.com/termsandconditions"
+                style={{ width: "100%", padding: "10px 14px", borderRadius: T.radius.md, border: `1.5px solid ${T.color.borderMed}`, fontSize: 14, fontFamily: T.font, outline: "none", background: T.color.bgDefault, color: T.color.primary, boxSizing: "border-box" }} />
+              <div style={{ fontSize: 12, color: T.color.tertiary, marginTop: 4, lineHeight: 1.4 }}>Link to your terms and conditions. This will be shown to customers on the checkout page.</div>
+            </div>
+          </div>
+        </Card>
+
+        <div style={{ padding: "8px 12px" }}>
+          <PrimaryBtn label={saving ? "Saving\u2026" : "Save changes"} onClick={!saving ? save : undefined} disabled={saving} />
+        </div>
+        <div style={{ padding: "4px 12px 8px" }}>
+          <button onClick={() => nav("checkoutPreview", JSON.stringify({ heading, subheading, privacyUrl, termsUrl }))}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", padding: "14px 20px", borderRadius: T.radius.md, fontSize: 16, fontWeight: 600, fontFamily: T.font, cursor: "pointer", border: `1.5px solid ${T.color.borderMed}`, background: T.color.bgDefault, color: T.color.primary }}>
+            {I.eye} Preview checkout
+          </button>
+        </div>
+
+        <div style={{ height: 16 }} />
+      </div>
+    </div>
+  );
+}
+
+// ── CHECKOUT PREVIEW ─────────────────────────────────────────
+function CheckoutPreviewScreen({ goBack, param }) {
+  let data = { heading: "CoffeeBrain Online", subheading: "Premium coffee, delivered to your door", privacyUrl: "", termsUrl: "" };
+  try { if (param) data = { ...data, ...JSON.parse(param) }; } catch (e) {}
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", background: "#fff" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 20, background: "#fff", flexShrink: 0, borderBottom: `1px solid ${T.color.borderLight}` }}>
+        <StatusBar />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px 12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Btn40 onClick={goBack} style={{ background: T.color.bgElevated }}>{I.close}</Btn40>
+            <span style={{ fontSize: 16, fontWeight: 600 }}>Checkout preview</span>
+          </div>
+          <Badge type="delivered">Preview</Badge>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {/* Mock checkout */}
+        <div style={{ background: "linear-gradient(180deg, #f6f5f3 0%, #fff 50%)", padding: "32px 24px 20px", textAlign: "center" }}>
+          <div style={{ width: 56, height: 56, borderRadius: 14, background: "linear-gradient(135deg,#f8d0c0,#f0a090)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 14px" }}>{"\u2615"}</div>
+          <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, color: T.color.primary }}>{data.heading || "Your Business"}</div>
+          <div style={{ fontSize: 14, color: T.color.secondary }}>{data.subheading || "Complete your purchase"}</div>
+        </div>
+
+        <div style={{ padding: "0 20px" }}>
+          {/* Order summary mock */}
+          <div style={{ padding: "16px 0", borderBottom: `1px solid ${T.color.borderLight}` }}>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: T.color.secondary, marginBottom: 12 }}>Order summary</div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 15 }}>
+              <span>Signature Blend (250g) {"\u00d7"} 2</span><span style={{ fontWeight: 600 }}>{"\u00a3"}18.00</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 15 }}>
+              <span>Oat Milk Latte Pods {"\u00d7"} 1</span><span style={{ fontWeight: 600 }}>{"\u00a3"}9.50</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 15, color: T.color.secondary }}>
+              <span>Delivery</span><span>Free</span>
+            </div>
+            <div style={{ height: 1, background: T.color.borderLight, margin: "8px 0" }} />
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 18, fontWeight: 700 }}>
+              <span>Total</span><span>{"\u00a3"}27.50</span>
+            </div>
+          </div>
+
+          {/* Payment mock */}
+          <div style={{ padding: "16px 0" }}>
+            <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: T.color.secondary, marginBottom: 12 }}>Payment</div>
+            <div style={{ padding: "14px 16px", borderRadius: T.radius.md, border: `1.5px solid ${T.color.borderMed}`, marginBottom: 10, display: "flex", alignItems: "center", gap: 10 }}>
+              <CardLogo network="visa" />
+              <span style={{ fontSize: 15, color: T.color.tertiary }}>{"\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022"} 4242</span>
+            </div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center", justifyContent: "center", padding: "4px 0", marginBottom: 8 }}>
+              <CardLogo network="visa" /><CardLogo network="mc" /><CardLogo network="amex" />
+            </div>
+          </div>
+
+          {/* Pay button */}
+          <div style={{ padding: "8px 0 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", padding: "16px 20px", borderRadius: T.radius.md, fontSize: 17, fontWeight: 700, background: T.color.primary, color: "#fff" }}>
+              Pay {"\u00a3"}27.50
+            </div>
+          </div>
+
+          {/* Footer with legal links */}
+          <div style={{ padding: "12px 0 32px", textAlign: "center", borderTop: `1px solid ${T.color.borderLight}` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginBottom: 10 }}>
+              <span style={{ color: T.color.tertiary }}>{I.lock}</span>
+              <span style={{ fontSize: 12, color: T.color.secondary }}>Secured by Teya</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 16, fontSize: 12 }}>
+              {data.privacyUrl && <span style={{ color: T.color.info, textDecoration: "underline", cursor: "pointer" }}>Privacy Policy</span>}
+              {data.termsUrl && <span style={{ color: T.color.info, textDecoration: "underline", cursor: "pointer" }}>Terms & Conditions</span>}
+            </div>
+            {(!data.privacyUrl && !data.termsUrl) && <div style={{ fontSize: 12, color: T.color.tertiary, fontStyle: "italic" }}>Add privacy and terms URLs to show links here</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── NOTIFICATIONS SCREEN ─────────────────────────────────────
+function NotificationsScreen({ nav, goBack, notifications, setNotifications }) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [toast, setToast] = useState(null);
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(t);
+  }, []);
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setToast({ msg: "All notifications marked as read", type: "success" });
+  };
+
+  const markOneRead = (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const SkeletonRow = () => (
+    <div style={{ display: "flex", gap: 12, padding: "14px 16px" }}>
+      <div style={{ width: 40, height: 40, borderRadius: T.radius.md, background: "linear-gradient(90deg, #f0efed 0px, #e8e7e4 40px, #f0efed 80px)", backgroundSize: "200px 100%", animation: "skeletonShimmer 1.5s infinite linear", flexShrink: 0 }} />
+      <div style={{ flex: 1 }}>
+        <div style={{ width: "60%", height: 14, borderRadius: 4, background: "linear-gradient(90deg, #f0efed 0px, #e8e7e4 40px, #f0efed 80px)", backgroundSize: "200px 100%", animation: "skeletonShimmer 1.5s infinite linear", marginBottom: 8 }} />
+        <div style={{ width: "90%", height: 12, borderRadius: 4, background: "linear-gradient(90deg, #f0efed 0px, #e8e7e4 40px, #f0efed 80px)", backgroundSize: "200px 100%", animation: "skeletonShimmer 1.5s infinite linear", marginBottom: 6 }} />
+        <div style={{ width: "30%", height: 10, borderRadius: 4, background: "linear-gradient(90deg, #f0efed 0px, #e8e7e4 40px, #f0efed 80px)", backgroundSize: "200px 100%", animation: "skeletonShimmer 1.5s infinite linear" }} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", position: "relative" }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <div style={{ position: "sticky", top: 0, zIndex: 20, background: T.color.bgSubtle, flexShrink: 0 }}>
+        <StatusBar />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 16px 12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Btn40 onClick={goBack}>{I.back}</Btn40>
+            <span style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.3 }}>Notifications</span>
+          </div>
+          <Btn40 onClick={() => nav("notifPrefs")} style={{ background: T.color.bgElevated }}>
+            {I.gear}
+          </Btn40>
+        </div>
+        {!loading && !error && notifications.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px 12px" }}>
+            <span style={{ fontSize: 13, color: T.color.secondary }}>
+              {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+            </span>
+            {unreadCount > 0 && (
+              <button onClick={markAllRead} style={{ fontSize: 13, fontWeight: 600, color: T.color.accent, background: "none", border: "none", cursor: "pointer", fontFamily: T.font, textDecoration: "underline" }}>Mark all as read</button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {/* Loading state */}
+        {loading && (
+          <div>
+            <SkeletonRow /><SkeletonRow /><SkeletonRow /><SkeletonRow /><SkeletonRow />
+          </div>
+        )}
+
+        {/* Error state */}
+        {!loading && error && (
+          <div style={{ padding: "60px 32px", textAlign: "center" }}>
+            <div style={{ width: 56, height: 56, borderRadius: 28, background: T.color.negativeBg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={T.color.negative} strokeWidth="1.5"/><path d="M12 8V13" stroke={T.color.negative} strokeWidth="1.5" strokeLinecap="round"/><circle cx="12" cy="16" r="1" fill={T.color.negative}/></svg>
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>We couldn't load your notifications</div>
+            <div style={{ fontSize: 14, color: T.color.secondary, marginBottom: 20, lineHeight: 1.45 }}>Check your connection and try again.</div>
+            <button onClick={() => { setError(false); setLoading(true); setTimeout(() => setLoading(false), 800); }}
+              style={{ padding: "10px 28px", borderRadius: T.radius.md, background: T.color.primary, color: "#fff", fontSize: 15, fontWeight: 600, fontFamily: T.font, border: "none", cursor: "pointer" }}>
+              Try again
+            </button>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && !error && notifications.length === 0 && (
+          <div style={{ padding: "60px 32px", textAlign: "center" }}>
+            <div style={{ width: 56, height: 56, borderRadius: 28, background: T.color.bgElevated, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", color: T.color.secondary }}>
+              {I.bell}
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>No notifications yet</div>
+            <div style={{ fontSize: 14, color: T.color.secondary, lineHeight: 1.45 }}>We'll show important updates here when you have them.</div>
+          </div>
+        )}
+
+        {/* All-read state */}
+        {!loading && !error && notifications.length > 0 && unreadCount === 0 && (
+          <div style={{ padding: "20px 32px 12px", textAlign: "center" }}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: T.color.positive, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              {I.check} You're all caught up
+            </div>
+          </div>
+        )}
+
+        {/* Notification list */}
+        {!loading && !error && notifications.length > 0 && (
+          <div>
+            {notifications.map((n, i) => {
+              const nc = NOTIF_COLORS[n.type] || NOTIF_COLORS.report;
+              return (
+                <div key={n.id}
+                  onClick={() => markOneRead(n.id)}
+                  style={{
+                    display: "flex", gap: 12, padding: "14px 16px",
+                    cursor: "pointer",
+                    background: n.read ? "transparent" : "rgba(94,165,0,0.03)",
+                    borderBottom: i < notifications.length - 1 ? `1px solid ${T.color.borderLight}` : "none",
+                    transition: "background .15s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = T.color.bgElevated}
+                  onMouseLeave={e => e.currentTarget.style.background = n.read ? "transparent" : "rgba(94,165,0,0.03)"}
+                >
+                  {/* Category icon */}
+                  <div style={{ width: 40, height: 40, borderRadius: T.radius.md, background: nc.bg, display: "flex", alignItems: "center", justifyContent: "center", color: nc.fg, flexShrink: 0 }}>
+                    {NOTIF_ICONS[n.type]}
+                  </div>
+                  {/* Content */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                      <span style={{ fontSize: 15, fontWeight: n.read ? 400 : 600, lineHeight: "20px", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.title}</span>
+                      {!n.read && <span style={{ width: 8, height: 8, borderRadius: 4, background: T.color.info, flexShrink: 0 }} />}
+                    </div>
+                    <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{n.body}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                      <span style={{ fontSize: 11, fontWeight: 500, color: nc.fg, background: nc.bg, padding: "1px 8px", borderRadius: T.radius.full }}>{n.category}</span>
+                      <span style={{ fontSize: 11, color: T.color.tertiary }}>{n.time}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div style={{ height: 16 }} />
+      </div>
+    </div>
+  );
+}
+
+// ── NOTIFICATION PREFERENCES ────────────────────────────────
+function NotifPrefsScreen({ goBack }) {
+  const [pblPaid, setPblPaid] = useState(true);
+  const [refundTriggered, setRefundTriggered] = useState(true);
+  const [refundCompleted, setRefundCompleted] = useState(true);
+  const [payoutCompleted, setPayoutCompleted] = useState(true);
+  const [marketing, setMarketing] = useState(true);
+  const [settlementReport, setSettlementReport] = useState(true);
+  const [settlementEmail, setSettlementEmail] = useState(true);
+  const [pblReport, setPblReport] = useState(true);
+  const [pblEmail, setPblEmail] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const PrefRow = ({ label, desc, on, onToggle, last, indent }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: indent ? "10px 16px 10px 28px" : "12px 16px", borderBottom: last ? "none" : `1px solid ${T.color.borderLight}` }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 500 }}>{label}</div>
+        {desc && <div style={{ fontSize: 13, color: T.color.secondary, marginTop: 1, lineHeight: 1.4 }}>{desc}</div>}
+      </div>
+      <Toggle on={on} onToggle={onToggle} />
+    </div>
+  );
+
+  const ChannelChip = ({ label, active, onClick }) => (
+    <button onClick={onClick} style={{ padding: "5px 14px", borderRadius: T.radius.full, fontSize: 12, fontWeight: 500, fontFamily: T.font, cursor: "pointer", border: active ? "none" : `1px solid ${T.color.borderMed}`, background: active ? T.color.primary : T.color.bgDefault, color: active ? "#fff" : T.color.primary, transition: "all .15s" }}>{label}</button>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", position: "relative" }}>
+      {toast && <Toast msg={toast.msg} type={toast.type} onDone={() => setToast(null)} />}
+      <TopBar title="Preferences" onBack={goBack} />
+      <div style={{ flex: 1, overflowY: "auto", padding: "4px 0 0" }}>
+        <div style={{ padding: "0 16px 12px", fontSize: 13, color: T.color.secondary, lineHeight: 1.45 }}>
+          Choose which notifications you receive. Changes apply immediately.
+        </div>
+
+        {/* Section 1: Operational alerts */}
+        <SectionLabel>Operational alerts</SectionLabel>
+        <Card>
+          <PrefRow label="Payout completed" desc="When money lands in your bank account" on={payoutCompleted} onToggle={() => setPayoutCompleted(p => !p)} />
+          <PrefRow label="PBL is paid" desc="When a pay-by-link payment is received" on={pblPaid} onToggle={() => setPblPaid(p => !p)} />
+          <PrefRow label="Refund triggered" desc="When a refund is initiated" on={refundTriggered} onToggle={() => setRefundTriggered(p => !p)} />
+          <PrefRow label="Refund completed" desc="When a refund finishes processing" on={refundCompleted} onToggle={() => setRefundCompleted(p => !p)} last />
+        </Card>
+
+        {/* Section 2: Marketing & product */}
+        <SectionLabel>Marketing & product updates</SectionLabel>
+        <Card>
+          <PrefRow label="New features & product news" desc="Updates about new tools, improvements, and feature launches" on={marketing} onToggle={() => setMarketing(p => !p)} last />
+        </Card>
+        <div style={{ padding: "0 16px 4px", fontSize: 12, color: T.color.tertiary, lineHeight: 1.4 }}>
+          Covers product announcements, campaigns, and promotional content.
+        </div>
+
+        {/* Section 3: Reports & emails */}
+        <SectionLabel>Reports & emails</SectionLabel>
+        <Card>
+          <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.color.borderLight}` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 15, fontWeight: 500 }}>Settlement reports</span>
+              <Toggle on={settlementReport} onToggle={() => setSettlementReport(p => !p)} />
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.4, marginBottom: 8 }}>Get notified when your settlement report is ready</div>
+            {settlementReport && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 12, color: T.color.secondary, marginRight: 4 }}>Channels:</span>
+                <ChannelChip label="In-app" active={true} onClick={() => {}} />
+                <ChannelChip label="Email" active={settlementEmail} onClick={() => setSettlementEmail(p => !p)} />
+              </div>
+            )}
+          </div>
+          <div style={{ padding: "12px 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 15, fontWeight: 500 }}>PBL reports</span>
+              <Toggle on={pblReport} onToggle={() => setPblReport(p => !p)} />
+            </div>
+            <div style={{ fontSize: 13, color: T.color.secondary, lineHeight: 1.4, marginBottom: 8 }}>Get notified when your pay-by-link report is ready</div>
+            {pblReport && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 12, color: T.color.secondary, marginRight: 4 }}>Channels:</span>
+                <ChannelChip label="In-app" active={true} onClick={() => {}} />
+                <ChannelChip label="Email" active={pblEmail} onClick={() => setPblEmail(p => !p)} />
+              </div>
+            )}
+          </div>
+        </Card>
+        <div style={{ padding: "0 16px 4px", fontSize: 12, color: T.color.tertiary, lineHeight: 1.4 }}>
+          Report notification settings have moved here from Store settings for easier access.
+        </div>
+
+        <div style={{ height: 24 }} />
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// APP ROUTER
+// ══════════════════════════════════════════════════════════════
+function TeyaPrototype() {
+  const [history, setHistory] = useState([{ screen: "home", param: null }]);
+  const [terminals, setTerminals] = useState(INIT_TERMINALS);
+  const [notifications, setNotifications] = useState(INIT_NOTIFICATIONS);
+  const [motoActive, setMotoActive] = useState(false); // false | "pending" | "active"
+  const [payLinksActive, setPayLinksActive] = useState(false);
+  const [dir, setDir] = useState("fwd");
+  const scrollRef = useRef(null);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+  const current = history[history.length - 1];
+  const screen = current.screen;
+  const param = current.param;
+
+  const nav = useCallback((to, p) => {
+    setDir("fwd");
+    setHistory(h => [...h, { screen: to, param: p ?? null }]);
+    setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, 10);
+  }, []);
+
+  const goBack = useCallback(() => {
+    if (history.length <= 1) return;
+    setDir("back");
+    setHistory(h => h.slice(0, -1));
+    setTimeout(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, 10);
+  }, [history.length]);
+
+  const renderScreen = () => {
+    switch (screen) {
+      case "home": return <HomeScreen onAvatar={() => nav("account")} onBell={() => nav("notifications")} unreadCount={unreadCount} />;
+      case "notifications": return <NotificationsScreen nav={nav} goBack={goBack} notifications={notifications} setNotifications={setNotifications} />;
+      case "notifPrefs": return <NotifPrefsScreen goBack={goBack} />;
+      case "account": return <AccountScreen nav={nav} goBack={goBack} terminals={terminals} />;
+      case "stores": return <StoresScreen nav={nav} goBack={goBack} />;
+      case "storeDetail": return <StoreDetailScreen nav={nav} goBack={goBack} storeId={param} />;
+      case "catalogue": return <CatalogueScreen nav={nav} goBack={goBack} terminals={terminals} motoActive={motoActive} setMotoActive={setMotoActive} payLinksActive={payLinksActive} setPayLinksActive={setPayLinksActive} />;
+      case "motoInfo": return <MotoInfoScreen nav={nav} goBack={goBack} motoActive={motoActive} setMotoActive={setMotoActive} />;
+      case "payLinksInfo": return <PayLinksInfoScreen nav={nav} goBack={goBack} payLinksActive={payLinksActive} setPayLinksActive={setPayLinksActive} />;
+      case "payLinksConfig": return <PayLinksConfigScreen nav={nav} goBack={goBack} />;
+      case "ecommerce": return <EcommerceScreen nav={nav} goBack={goBack} />;
+      case "checkoutPreview": return <CheckoutPreviewScreen goBack={goBack} param={param} />;
+      case "terminals": return <TerminalsScreen nav={nav} goBack={goBack} terminals={terminals} />;
+      case "detail": return <DetailScreen nav={nav} goBack={goBack} termId={param} terminals={terminals} setTerminals={setTerminals} />;
+      case "payConfig": return <PayConfigScreen nav={nav} goBack={goBack} preselect={param} terminals={terminals} motoActive={motoActive} payLinksActive={payLinksActive} />;
+      case "mealVoucher": return <MealVoucherScreen goBack={goBack} terminals={terminals} />;
+      default: return <HomeScreen onAvatar={() => nav("account")} onBell={() => nav("notifications")} unreadCount={unreadCount} />;
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", background: "#e8e8e3", padding: "24px 0", fontFamily: T.font }}>
+      <div id="phone-frame" style={{ width: 393, height: 852, borderRadius: 44, border: "3px solid #222", boxShadow: "0 32px 64px rgba(0,0,0,.15), 0 0 0 1px rgba(0,0,0,.05)", position: "relative", background: T.color.bgSubtle, overflow: "hidden" }}>
+        <div
+          ref={scrollRef}
+          key={screen + String(param)}
+          style={{ height: "100%", overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch", animation: `${dir === "fwd" ? "slideInRight" : "slideInLeft"} .28s cubic-bezier(.25,.1,.25,1)` }}
+        >
+          {renderScreen()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<TeyaPrototype />);
+</script>
+</body>
+</html>
