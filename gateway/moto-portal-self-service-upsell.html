@@ -60,7 +60,51 @@
   main { width: 100%; padding-left: 260px; }
   @media (max-width: 860px) { main { padding-left: 0; } }
   /* Centered within the content area (the space to the right of the sidebar) */
-  .pp-page { padding: 24px 32px 64px; max-width: 784px; margin: 0 auto; }
+  .pp-page { padding: 24px 32px 64px; }
+  #motoPage { max-width: 784px; margin: 0 auto; }
+  .pp-page-body { max-width: 880px; margin: 0 auto; }
+
+  /* ===== Pricing & products view ===== */
+  .pp-plan-hero { background: #ffffff; border: 1px solid #756b571a; border-radius: 20px; padding: 28px; margin-bottom: 32px; }
+  .pp-plan-hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+  .pp-plan-label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; color: #211c1266; margin-bottom: 4px; }
+  .pp-plan-name { font-size: 20px; line-height: 28px; font-weight: 600; color: #090806ec; }
+  .pp-plan-price { display: flex; align-items: baseline; gap: 8px; margin-bottom: 28px; }
+  .pp-plan-price-amount { font-size: 44px; line-height: 52px; font-weight: 600; color: #090806ec; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+  .pp-plan-price-period { font-size: 15px; color: #16140e8c; font-weight: 500; }
+  .pp-plan-included { display: flex; flex-direction: column; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #756b571a; }
+  .pp-plan-included-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; font-size: 14px; line-height: 20px; }
+  .pp-plan-included-row + .pp-plan-included-row { border-top: 1px solid #756b571a; }
+  .pp-plan-included-label { color: #16140e8c; }
+  .pp-plan-included-value { color: #090806ec; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .pp-plan-config-link { display: flex; align-items: center; gap: 16px; padding: 12px; background: transparent; border-radius: 12px; text-decoration: none; color: inherit; cursor: pointer; transition: background-color 100ms ease-out; }
+  .pp-plan-config-link:hover { background: #fafaf8; }
+  .pp-plan-config-link-icon { width: 40px; height: 40px; border-radius: 10px; background: #fafac7; color: #46520f; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pp-plan-config-link-text { flex: 1; }
+  .pp-plan-config-link-title { font-size: 15px; font-weight: 600; color: #090806ec; margin-bottom: 2px; }
+  .pp-plan-config-link-sub { font-size: 13px; color: #16140e8c; }
+  .pp-section-title { font-size: 18px; line-height: 24px; font-weight: 600; color: #090806ec; margin: 32px 0 16px; }
+  .pp-product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .pp-product-card { display: flex; align-items: center; gap: 16px; background: #ffffff; border: 1px solid #756b571a; border-radius: 16px; padding: 18px; text-decoration: none; color: inherit; cursor: pointer; text-align: left; font-family: inherit; transition: background-color 100ms ease-out, border-color 100ms ease-out, box-shadow 120ms ease-out; }
+  .pp-product-card:hover { background: #fafaf8; border-color: #756b5740; }
+  .pp-product-card-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pp-product-card-icon--positive { background: #ecfcca; color: #497d00; }
+  .pp-product-card-icon--info { background: #e0f2fe; color: #0369a1; }
+  .pp-product-card-icon--muted { background: #f5f4ef; color: #16140e8c; }
+  .pp-product-card-icon--brand { background: #fafac7; color: #46520f; }
+  .pp-product-card-body { flex: 1; min-width: 0; }
+  .pp-product-card-title { font-size: 15px; font-weight: 600; color: #090806ec; line-height: 20px; }
+  .pp-product-card-sub { font-size: 13px; color: #16140e8c; line-height: 18px; margin-top: 2px; }
+  .pp-product-badge--inactive { background: #f5f4ef; color: #16140e8c; }
+  .pp-business-account { display: flex; align-items: center; gap: 16px; width: 100%; background: #ffffff; border: 1px solid #756b571a; border-radius: 16px; padding: 18px; cursor: pointer; text-align: left; font-family: inherit; transition: background-color 100ms ease-out, border-color 100ms ease-out; }
+  .pp-business-account:hover { background: #fafaf8; border-color: #756b5740; }
+  .pp-upsell-card { display: flex; align-items: center; gap: 16px; width: 100%; background: linear-gradient(135deg, #fafac7 0%, #f3f1c4 100%); border: 1px solid #e1e51a; border-radius: 16px; padding: 20px; cursor: pointer; text-align: left; font-family: inherit; transition: transform 100ms ease-out; }
+  .pp-upsell-card:hover { transform: translateY(-1px); }
+  .pp-upsell-card-icon { width: 44px; height: 44px; border-radius: 12px; background: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #46520f; }
+  .pp-upsell-card-body { flex: 1; }
+  .pp-upsell-card-title { font-size: 16px; font-weight: 600; color: #29320c; margin-bottom: 4px; }
+  .pp-upsell-card-sub { font-size: 14px; color: #46520f; }
+  .pp-upsell-cta { font-size: 14px; font-weight: 600; color: #29320c; padding: 8px 16px; background: #ffffff; border-radius: 10px; flex-shrink: 0; }
   .pp-page-header { display: flex; align-items: center; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
   .pp-breadcrumb-link {
     display: inline-flex; align-items: center; gap: 6px; background: transparent; border: none;
@@ -358,6 +402,136 @@
 
   <!-- Content -->
   <main class="flex-1 min-w-0">
+
+    <!-- ===== PRICING & PRODUCTS VIEW ===== -->
+    <div class="pp-page" id="pagePricing" hidden>
+      <div class="pp-page-body">
+
+        <div class="teya-status-banner"><span class="dot"></span>Pricing &amp; products — design prototype</div>
+
+        <div class="pp-page-header">
+          <button type="button" class="pp-breadcrumb-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            Onion Garden
+          </button>
+          <span class="pp-breadcrumb-sep">/</span>
+          <span class="pp-breadcrumb-current">Pricing plan &amp; products</span>
+        </div>
+
+        <header class="pp-pane-header">
+          <h1 class="page-heading">Pricing plan</h1>
+          <p class="page-heading-sub">Your subscription and what's included</p>
+        </header>
+
+        <div class="pp-plan-hero">
+          <div class="pp-plan-hero-top">
+            <div>
+              <div class="pp-plan-label">Your plan</div>
+              <div class="pp-plan-name">Starter plan</div>
+            </div>
+            <button type="button" class="pp-btn pp-btn--primary" data-stub="Plan upgrade">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L22 12L12 22L2 12L12 2Z"/></svg>
+              Upgrade plan
+            </button>
+          </div>
+          <div class="pp-plan-price">
+            <span class="pp-plan-price-amount">£49.00</span>
+            <span class="pp-plan-price-period">/ month</span>
+          </div>
+          <div class="pp-plan-included">
+            <div class="pp-plan-included-row"><span class="pp-plan-included-label">Acquiring fee</span><span class="pp-plan-included-value">1.25% + £0.02</span></div>
+            <div class="pp-plan-included-row"><span class="pp-plan-included-label">Daily fee</span><span class="pp-plan-included-value">£0.50</span></div>
+            <div class="pp-plan-included-row"><span class="pp-plan-included-label">Included terminals</span><span class="pp-plan-included-value">5</span></div>
+            <div class="pp-plan-included-row"><span class="pp-plan-included-label">Business account</span><span class="pp-plan-included-value">Included</span></div>
+          </div>
+          <a href="#" class="pp-plan-config-link" data-stub="Payment and fee configuration">
+            <div class="pp-plan-config-link-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 10v6M4.22 4.22l4.24 4.24m7.08 7.08l4.24 4.24M1 12h6m10 0h6M4.22 19.78l4.24-4.24m7.08-7.08l4.24-4.24"/></svg>
+            </div>
+            <div class="pp-plan-config-link-text">
+              <div class="pp-plan-config-link-title">Payment and fee configuration</div>
+              <div class="pp-plan-config-link-sub">Manage card schemes, DCC, and payment methods</div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#211c1266" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>
+
+        <h2 class="pp-section-title">Your products</h2>
+        <div class="pp-product-grid">
+          <a class="pp-product-card" href="#" data-stub="Card machines">
+            <div class="pp-product-card-icon pp-product-card-icon--positive"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="12" cy="19" r="1" fill="currentColor"/><rect x="7" y="6" width="10" height="6" rx="1"/></svg></div>
+            <div class="pp-product-card-body">
+              <div class="pp-product-card-title">Card machines</div>
+              <div class="pp-product-card-sub">From £15/mo per device</div>
+            </div>
+            <span class="pp-product-badge pp-product-badge--active">2 active</span>
+          </a>
+          <a class="pp-product-card" href="#" data-stub="Tap to Pay">
+            <div class="pp-product-card-icon pp-product-card-icon--positive"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="2" width="10" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg></div>
+            <div class="pp-product-card-body">
+              <div class="pp-product-card-title">Tap to Pay</div>
+              <div class="pp-product-card-sub">Accept contactless with your phone</div>
+            </div>
+            <span class="pp-product-badge pp-product-badge--active">Active</span>
+          </a>
+          <a class="pp-product-card" href="#" data-stub="E-commerce">
+            <div class="pp-product-card-icon pp-product-card-icon--info"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3h2l.4 2M5.4 5H21l-2 7H7M5.4 5l1.6 7"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></div>
+            <div class="pp-product-card-body">
+              <div class="pp-product-card-title">E-commerce</div>
+              <div class="pp-product-card-sub">Online checkout for your store</div>
+            </div>
+            <span class="pp-product-badge pp-product-badge--active">Active</span>
+          </a>
+          <a class="pp-product-card" href="#" id="ppMotoCard">
+            <div class="pp-product-card-icon pp-product-card-icon--brand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div>
+            <div class="pp-product-card-body">
+              <div class="pp-product-card-title">MOTO</div>
+              <div class="pp-product-card-sub" id="ppMotoSub">Take card payments over the phone</div>
+            </div>
+            <span class="pp-product-badge pp-product-badge--inactive" id="ppMotoBadge">Inactive</span>
+          </a>
+          <a class="pp-product-card" href="#" data-stub="Payment Links">
+            <div class="pp-product-card-icon pp-product-card-icon--muted"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg></div>
+            <div class="pp-product-card-body">
+              <div class="pp-product-card-title">Payment Links</div>
+              <div class="pp-product-card-sub">Send payment links to customers</div>
+            </div>
+            <span class="pp-product-badge pp-product-badge--inactive">Inactive</span>
+          </a>
+          <a class="pp-product-card" href="#" data-stub="Meal vouchers">
+            <div class="pp-product-card-icon pp-product-card-icon--muted"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11h18v2a8 8 0 01-8 8h-2a8 8 0 01-8-8v-2z"/><path d="M7 11V8a5 5 0 0110 0v3"/></svg></div>
+            <div class="pp-product-card-body">
+              <div class="pp-product-card-title">Meal vouchers</div>
+              <div class="pp-product-card-sub">Accept local meal voucher schemes</div>
+            </div>
+            <span class="pp-product-badge pp-product-badge--inactive">Not set up</span>
+          </a>
+        </div>
+
+        <h2 class="pp-section-title">Business Account</h2>
+        <button type="button" class="pp-business-account" data-stub="Business Account">
+          <div class="pp-product-card-icon pp-product-card-icon--info"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18M3 10h18M5 6l7-4 7 4M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg></div>
+          <div class="pp-product-card-body">
+            <div class="pp-product-card-title">Business Account</div>
+            <div class="pp-product-card-sub">30-18-22 · 59106731</div>
+          </div>
+          <span class="pp-product-badge pp-product-badge--active">Active</span>
+        </button>
+
+        <h2 class="pp-section-title">Products you can add</h2>
+        <button type="button" class="pp-upsell-card" data-stub="Credit">
+          <div class="pp-upsell-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+          <div class="pp-upsell-card-body">
+            <div class="pp-upsell-card-title">Credit</div>
+            <div class="pp-upsell-card-sub">Get up to £50K funded from your sales</div>
+          </div>
+          <span class="pp-upsell-cta">Get started →</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ===== MOTO VIEW ===== -->
     <div class="pp-page" id="motoPage">
 
       <div class="teya-status-banner"><span class="dot"></span>MOTO setup — design prototype</div>
@@ -369,7 +543,7 @@
           Onion Garden
         </button>
         <span class="pp-breadcrumb-sep">/</span>
-        <a href="./pricing-products-v2.html" class="pp-breadcrumb-link" style="padding:6px 10px">Pricing plan &amp; products</a>
+        <a href="#" id="motoToPricing" class="pp-breadcrumb-link" style="padding:6px 10px">Pricing plan &amp; products</a>
         <span class="pp-breadcrumb-sep">/</span>
         <span class="pp-breadcrumb-current">MOTO</span>
       </div>
@@ -392,7 +566,7 @@
           <div class="prod-hero-facts">
             <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>Uses your existing terminals</span>
             <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>No setup or monthly cost</span>
-            <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>Reviewed in 2–3 days</span>
+            <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>Reviewed in 3 working days</span>
           </div>
         </section>
 
@@ -424,7 +598,7 @@
 
         <section class="pf-card">
           <h2 class="pf-card-title" style="margin-bottom:8px">Subject to approval</h2>
-          <p style="font-size:14px; line-height:21px; color:#16140e8c; margin:0">Because card-not-present payments carry more risk, every request goes through an eligibility check and isn't guaranteed. If approved, we'll enable MOTO on your chosen terminals — reviews are typically complete in 2–3 working days.</p>
+          <p style="font-size:14px; line-height:21px; color:#16140e8c; margin:0">Because card-not-present payments carry more risk, every request goes through an eligibility check and isn't guaranteed. If approved, we'll enable MOTO on your chosen terminals — reviews are typically complete in 3 working days.</p>
         </section>
 
         <div class="prod-cta">
@@ -453,7 +627,7 @@
           <span class="ec-status-clock"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
           <div class="ec-status-main">
             <div class="ec-status-title">Your request is under review</div>
-            <div class="ec-status-sub">We're checking your eligibility. This usually takes 2–3 working days — we'll email you when there's a decision.</div>
+            <div class="ec-status-sub">We're checking your eligibility. This usually takes 3 working days — we'll email you when there's a decision.</div>
           </div>
           <span class="pp-product-badge pp-product-badge--pending">Pending</span>
         </section>
@@ -470,7 +644,7 @@
         <section class="pf-card">
           <h2 class="pf-card-title">What happens next</h2>
           <div class="prod-steps">
-            <div class="prod-step"><div class="prod-step-num">1</div><div><div class="prod-step-title">We review your request</div><div class="prod-step-body">Our team checks your transaction history and account, usually within 2–3 working days.</div></div></div>
+            <div class="prod-step"><div class="prod-step-num">1</div><div><div class="prod-step-title">We review your request</div><div class="prod-step-body">Our team checks your transaction history and account, usually within 3 working days.</div></div></div>
             <div class="prod-step"><div class="prod-step-num">2</div><div><div class="prod-step-title">We let you know</div><div class="prod-step-body">You'll get an email with the decision. Not every request is approved.</div></div></div>
             <div class="prod-step"><div class="prod-step-num">3</div><div><div class="prod-step-title">Start taking MOTO payments</div><div class="prod-step-body">Once approved, your selected terminals can take phone payments straight away.</div></div></div>
           </div>
@@ -570,7 +744,7 @@
 
       <div class="mf-warning">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        <div class="mf-warning-text">Manual entry carries a higher fraud risk. Requests are reviewed within 2–3 working days and may not be approved for all merchants.</div>
+        <div class="mf-warning-text">We'll review your request within 3 working days.</div>
       </div>
     </div>
     <div class="pp-modal-footer">
@@ -777,7 +951,7 @@
     var ids = reqSelectedIds();
     window.teyaUpdateProductConfig('moto', { status: 'pending', active: false, fileName: uploadedName, requestedAt: todayStr(), enabledTerminals: ids });
     closeModals();
-    window.teyaToast({ title: 'Request submitted', body: "We'll review it within 2–3 working days and email you the decision." });
+    window.teyaToast({ title: 'Request submitted', body: "We'll review it within 3 working days and email you the decision." });
     render();
   });
 
@@ -871,7 +1045,61 @@
     render();
   });
 
+  window.__motoRender = render;
   render();
+})();
+</script>
+<script>
+/* ---------- View router (pricing ⇄ MOTO) + pricing card state ---------- */
+(function () {
+  var pricing = document.getElementById('pagePricing');
+  var moto = document.getElementById('motoPage');
+  if (!pricing || !moto) return;
+
+  function refreshMotoCard() {
+    var m; try { m = JSON.parse(localStorage.getItem('teya_moto')); } catch (e) { m = null; }
+    var status = m ? (m.status || (m.active ? 'active' : 'none')) : 'none';
+    var badge = document.getElementById('ppMotoBadge');
+    var sub = document.getElementById('ppMotoSub');
+    if (!badge) return;
+    if (status === 'active') {
+      var n = (m.enabledTerminals || []).length;
+      badge.className = 'pp-product-badge pp-product-badge--active';
+      badge.textContent = 'Active';
+      sub.textContent = n > 0 ? ('On ' + n + ' terminal' + (n === 1 ? '' : 's')) : 'Take card payments over the phone';
+    } else if (status === 'pending') {
+      badge.className = 'pp-product-badge pp-product-badge--pending';
+      badge.textContent = 'Pending';
+      sub.textContent = 'Request under review';
+    } else {
+      badge.className = 'pp-product-badge pp-product-badge--inactive';
+      badge.textContent = 'Inactive';
+      sub.textContent = 'Take card payments over the phone';
+    }
+  }
+
+  function showView(name) {
+    var isPricing = name === 'pricing';
+    pricing.hidden = !isPricing;
+    moto.hidden = isPricing;
+    if (isPricing) refreshMotoCard();
+    else if (window.__motoRender) window.__motoRender();
+    window.scrollTo(0, 0);
+  }
+
+  document.querySelectorAll('#pagePricing [data-stub]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.teyaToast({ title: el.getAttribute('data-stub'), body: 'Not part of this prototype yet.' });
+    });
+  });
+
+  var motoCard = document.getElementById('ppMotoCard');
+  if (motoCard) motoCard.addEventListener('click', function (e) { e.preventDefault(); showView('moto'); });
+  var back = document.getElementById('motoToPricing');
+  if (back) back.addEventListener('click', function (e) { e.preventDefault(); showView('pricing'); });
+
+  refreshMotoCard();
 })();
 </script>
 </body>
