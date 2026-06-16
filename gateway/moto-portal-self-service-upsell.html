@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOTO · Teya</title>
+<script src="https://cdn.tailwindcss.com?plugins="></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html, body { font-family: "Figtree", system-ui, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  * { box-sizing: border-box; }
+
+  /* ===== Chrome (sidebar/toast/banner) — Teya DS tokens ===== */
+  .app { display: block; min-height: 100vh; }
+  .sidebar {
+    width: 260px; position: fixed; top: 0; left: 0;
+    height: 100vh; overflow-y: auto; overflow-x: hidden;
+    background: #ffffff; border-right: 1px solid #756b571a;
+    display: flex; flex-direction: column; gap: 4px; padding: 16px 12px 20px; z-index: 20;
+  }
+  .sidebar-top { display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-bottom { display: flex; flex-direction: column; gap: 4px; margin-top: auto; padding-top: 12px; }
+  .sidebar-company-btn {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    padding: 8px; border-radius: 14px; background: transparent; border: none;
+    cursor: pointer; font-family: inherit; text-align: left; margin-bottom: 8px;
+    transition: background-color 120ms ease-out;
+  }
+  .sidebar-company-btn:hover { background: #5f4f300d; }
+  .sidebar-company-avatar {
+    width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+    background: #f1f3b6; color: #46520f; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700;
+  }
+  .sidebar-company-name { flex: 1; min-width: 0; font-size: 17px; font-weight: 700; color: #090806ec;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-company-chevron { color: #211c1266; flex-shrink: 0; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    height: 46px; padding: 0 12px; border-radius: 12px;
+    font-size: 16px; line-height: 22px; font-weight: 500; color: #525866;
+    text-decoration: none; cursor: pointer; border: none; background: transparent;
+    font-family: inherit; text-align: left;
+    transition: background-color 120ms ease-out, color 120ms ease-out;
+  }
+  .sidebar-item:hover { background: #5f4f300d; color: #090806ec; }
+  .sidebar-item.is-active { background: #f1f3b6; font-weight: 700; color: #46520f; }
+  .sidebar-item .lemo-icon { width: 22px; height: 22px; flex-shrink: 0; color: #6f7682; }
+  .sidebar-item:hover .lemo-icon, .sidebar-item.is-active .lemo-icon { color: #46520f; }
+  .sidebar-item > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sidebar-section { display: flex; flex-direction: column; margin-top: 10px; }
+  .sidebar-section-label { padding: 6px 12px 4px; font-size: 12px; line-height: 16px; font-weight: 600;
+    letter-spacing: 1.3px; text-transform: uppercase; color: #9aa0a6; }
+  .sidebar-utility { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #756b571a; }
+
+  /* ===== Page shell ===== */
+  main { width: 100%; padding-left: 260px; }
+  @media (max-width: 860px) { main { padding-left: 0; } }
+  /* Centered within the content area (the space to the right of the sidebar) */
+  .pp-page { padding: 24px 32px 64px; max-width: 784px; margin: 0 auto; }
+  .pp-page-header { display: flex; align-items: center; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+  .pp-breadcrumb-link {
+    display: inline-flex; align-items: center; gap: 6px; background: transparent; border: none;
+    padding: 6px 10px 6px 6px; border-radius: 8px; font-size: 14px; font-weight: 500; color: #16140e8c;
+    cursor: pointer; font-family: inherit; text-decoration: none;
+    transition: background-color 100ms ease-out, color 100ms ease-out;
+  }
+  .pp-breadcrumb-link:hover { background: #fafaf8; color: #090806ec; }
+  .pp-breadcrumb-sep { color: #211c1266; }
+  .pp-breadcrumb-current { color: #090806ec; padding: 6px 10px; font-size: 14px; font-weight: 500; }
+
+  .pp-pane-header { margin-bottom: 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .page-heading { font-size: 40px; line-height: 46px; font-weight: 400; color: #090806ec; margin: 0 0 6px 0; letter-spacing: -0.02em; }
+  .page-heading-sub { font-size: 15px; line-height: 22px; color: #16140e8c; margin: 0; }
+
+  /* Buttons */
+  .pp-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 44px; padding: 0 20px; border-radius: 12px;
+    font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; border: none;
+    transition: background-color 120ms ease-out, transform 80ms ease-out, border-color 120ms ease-out;
+  }
+  .pp-btn:active { transform: translateY(1px); }
+  .pp-btn--primary { background: #e1e51a; color: #29320c; }
+  .pp-btn--primary:hover { background: #d4d816; }
+  .pp-btn--secondary { background: #ffffff; color: #090806ec; border: 1px solid #756b5733; }
+  .pp-btn--secondary:hover { background: #fafaf8; border-color: #756b5759; }
+  .pp-btn--ghost { background: transparent; color: #46520f; }
+  .pp-btn--ghost:hover { background: #fafac7; }
+
+  /* Header overflow menu */
+  .td-header-actions { position: relative; display: flex; align-items: center; gap: 10px; }
+  .td-more-btn {
+    width: 40px; height: 40px; border-radius: 12px; background: #ffffff; border: 1px solid #756b5733;
+    cursor: pointer; color: #16140e8c; display: inline-flex; align-items: center; justify-content: center;
+    transition: background-color 100ms ease-out, color 100ms ease-out;
+  }
+  .td-more-btn:hover { background: #fafaf8; color: #090806ec; }
+  .td-more-menu {
+    position: absolute; top: calc(100% + 8px); right: 0; min-width: 220px; background: #ffffff;
+    border: 1px solid #756b571a; border-radius: 12px; padding: 6px;
+    box-shadow: 0 12px 32px -8px rgba(16,24,40,0.18), 0 4px 12px -4px rgba(16,24,40,0.10); z-index: 30; display: none;
+  }
+  .td-more-menu.open { display: block; }
+  .td-more-menu-item {
+    display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: 8px;
+    background: transparent; border: none; font-size: 14px; font-weight: 500; color: #090806ec;
+    cursor: pointer; text-align: left; font-family: inherit; transition: background-color 100ms ease-out;
+  }
+  .td-more-menu-item:hover { background: #fafaf8; }
+  .td-more-menu-item--danger { color: #e7000b; }
+  .td-more-menu-item--danger svg { color: #e7000b; }
+
+  /* Hero */
+  .prod-info, .prod-config { max-width: 720px; }
+  .prod-hero {
+    background: linear-gradient(135deg, #fafac7 0%, #f3f1c4 100%);
+    border: 1px solid #e1e51a; border-radius: 20px; padding: 32px; margin-bottom: 16px;
+  }
+  .prod-hero-icon {
+    width: 56px; height: 56px; background: #ffffff; border-radius: 16px; margin-bottom: 18px;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(16,24,40,0.08);
+  }
+  .prod-hero-title { font-size: 26px; line-height: 32px; font-weight: 400; color: #29320c; margin: 0 0 10px; letter-spacing: -0.01em; }
+  .prod-hero-body { font-size: 15px; line-height: 23px; color: #46520f; margin: 0; max-width: 520px; }
+  .prod-hero-facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .prod-fact {
+    display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 9999px;
+    background: #ffffffcc; border: 1px solid #e1e51a80; font-size: 13px; font-weight: 600; color: #29320c;
+  }
+  .prod-fact svg { color: #46520f; flex-shrink: 0; }
+
+  /* Cards */
+  .pf-card { background: #ffffff; border: 1px solid #756b571a; border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+  .pf-card-title { font-size: 16px; line-height: 22px; font-weight: 600; color: #090806ec; margin: 0 0 16px 0; }
+
+  /* How it works steps */
+  .prod-steps { display: flex; flex-direction: column; gap: 18px; }
+  .prod-step { display: flex; gap: 14px; }
+  .prod-step-num {
+    width: 28px; height: 28px; border-radius: 50%; background: #fafac7; color: #46520f;
+    font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .prod-step-title { font-size: 14px; font-weight: 600; color: #090806ec; line-height: 20px; margin-bottom: 2px; }
+  .prod-step-body { font-size: 13px; line-height: 19px; color: #16140e8c; }
+
+  /* Data rows (fees) */
+  .td-data-list { display: flex; flex-direction: column; }
+  .td-data-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; font-size: 14px; }
+  .td-data-row + .td-data-row { border-top: 1px solid #756b571a; }
+  .td-data-row:first-child { padding-top: 0; }
+  .td-data-label { color: #16140e8c; }
+  .td-data-value { color: #090806ec; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .td-note { font-size: 12px; color: #16140e8c; line-height: 16px; margin: 14px 0 0; }
+
+  /* Good-to-know list */
+  .gtk-list { display: flex; flex-direction: column; gap: 14px; }
+  .gtk-item { display: flex; gap: 12px; }
+  .gtk-item svg { color: #46520f; flex-shrink: 0; margin-top: 1px; }
+  .gtk-item-title { font-size: 14px; font-weight: 600; color: #090806ec; line-height: 20px; }
+  .gtk-item-body { font-size: 13px; line-height: 19px; color: #16140e8c; margin-top: 1px; }
+
+  /* CTA */
+  .prod-cta { margin-top: 8px; }
+  .prod-cta .pp-btn { width: 100%; height: 50px; font-size: 16px; }
+  .prod-cta-note { text-align: center; font-size: 13px; color: #16140e8c; margin: 12px 0 0; }
+
+  /* Active state — status card */
+  .ec-status-card {
+    display: flex; align-items: center; gap: 14px; padding: 18px;
+    background: #ecfcca; border: 1px solid #cfe898; border-radius: 16px; margin-bottom: 16px;
+  }
+  .ec-status-check {
+    width: 40px; height: 40px; border-radius: 50%; background: #497d00; color: #ffffff;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .ec-status-main { flex: 1; min-width: 0; }
+  .ec-status-title { font-size: 15px; font-weight: 600; color: #2c3d08; line-height: 20px; }
+  .ec-status-sub { font-size: 13px; color: #46520f; line-height: 18px; margin-top: 2px; }
+  .pp-product-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600; line-height: 18px; flex-shrink: 0; }
+  .pp-product-badge--active { background: #d8f3a8; color: #3d6a00; }
+
+  /* Enabled terminals */
+  .moto-enabled-list { display: flex; flex-direction: column; gap: 8px; }
+  .moto-enabled-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #fafaf8; border-radius: 12px; }
+  .cm-name-icon {
+    width: 38px; height: 38px; border-radius: 10px; background: #ecfcca; color: #497d00;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .moto-enabled-item-name { font-size: 14px; font-weight: 600; color: #090806ec; }
+  .moto-enabled-item-meta { font-size: 12px; color: #16140e8c; margin-top: 1px; }
+  .moto-enabled-item-right { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #497d00; }
+  .moto-enabled-item-right .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .moto-enabled-empty { font-size: 13px; color: #16140e8c; padding: 16px; text-align: center; background: #fafaf8; border-radius: 12px; }
+
+  .moto-howto { margin: 0; padding-left: 20px; font-size: 14px; line-height: 23px; color: #090806ec; }
+  .moto-howto li { margin-bottom: 6px; }
+  .moto-howto strong { font-weight: 700; }
+
+  /* Modal */
+  .pp-modal-backdrop {
+    position: fixed; inset: 0; background: rgba(11,11,10,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    z-index: 250; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none;
+    transition: opacity 200ms ease-out;
+  }
+  .pp-modal-backdrop.open { opacity: 1; pointer-events: auto; }
+  .pp-modal {
+    width: 520px; max-width: calc(100vw - 32px); background: #ffffff; border-radius: 20px;
+    box-shadow: 0 20px 48px -8px rgba(16,24,40,0.18), 0 8px 16px -4px rgba(16,24,40,0.10);
+    transform: scale(0.96); transition: transform 200ms cubic-bezier(0.16,1,0.3,1);
+    max-height: calc(100vh - 48px); display: flex; flex-direction: column;
+  }
+  .pp-modal-backdrop.open .pp-modal { transform: scale(1); }
+  .pp-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 22px 24px 0; }
+  .pp-modal-title { font-size: 19px; line-height: 24px; font-weight: 600; color: #090806ec; margin: 0; }
+  .pp-modal-close {
+    width: 32px; height: 32px; border-radius: 50%; background: transparent; border: none; color: #16140e8c;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background-color 100ms;
+  }
+  .pp-modal-close:hover { background: #fafaf8; color: #090806ec; }
+  .pp-modal-body { padding: 8px 24px 0; overflow-y: auto; }
+  .pp-modal-desc { font-size: 14px; line-height: 20px; color: #16140e8c; margin: 8px 0 14px 0; }
+  .moto-selectall {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+    font-size: 13px; font-weight: 600; color: #16140e8c;
+  }
+  .moto-selectall button { background: transparent; border: none; color: #46520f; font-weight: 600; cursor: pointer; font-family: inherit; font-size: 13px; padding: 4px 8px; border-radius: 8px; }
+  .moto-selectall button:hover { background: #fafac7; }
+  .moto-store-group + .moto-store-group { margin-top: 14px; }
+  .moto-store-label { font-size: 12px; font-weight: 700; letter-spacing: 0.4px; color: #16140e8c; margin: 0 0 6px 2px; text-transform: uppercase; }
+  .moto-terminal-list { display: flex; flex-direction: column; gap: 4px; }
+  .moto-terminal-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; cursor: pointer;
+    border: 1px solid #756b571a; transition: background-color 100ms ease-out, border-color 100ms ease-out;
+  }
+  .moto-terminal-item:hover { background: #fafaf8; border-color: #756b5733; }
+  .moto-terminal-item input { width: 18px; height: 18px; accent-color: #497d00; flex-shrink: 0; cursor: pointer; }
+  .moto-terminal-item-name { font-size: 14px; font-weight: 600; color: #090806ec; }
+  .moto-terminal-item-meta { font-size: 12px; color: #16140e8c; margin-top: 1px; }
+  .pp-modal-footer { display: flex; gap: 10px; padding: 16px 24px 22px; border-top: 1px solid #756b571a; margin-top: 16px; }
+  .pp-modal-footer .pp-btn { flex: 1; }
+  .pp-modal-fee { font-size: 12px; color: #16140e8c; line-height: 16px; padding: 0 24px; margin: 4px 0 0; }
+
+  /* Toast */
+  .teya-toast-wrap { position: fixed; left: 24px; bottom: 24px; z-index: 300; display: flex; flex-direction: column; gap: 10px; max-width: 360px; }
+  .teya-toast {
+    display: flex; align-items: flex-start; gap: 12px; background: #fff; border: 1px solid #756b571a; border-radius: 14px;
+    padding: 14px 16px; box-shadow: 0 12px 28px rgba(16,24,40,0.14), 0 2px 6px rgba(16,24,40,0.08);
+    transform: translateY(8px); opacity: 0; transition: transform 220ms cubic-bezier(.16,1,.3,1), opacity 180ms ease-out;
+  }
+  .teya-toast.in { transform: translateY(0); opacity: 1; }
+  .teya-toast-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; background: #2fa84c; }
+  .teya-toast-title { font-size: 14px; font-weight: 600; color: #090806ec; line-height: 18px; }
+  .teya-toast-text { font-size: 13px; color: #16140e8c; line-height: 18px; margin-top: 2px; }
+
+  /* Status banner (WIP affordance) */
+  .teya-status-banner {
+    display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 9px 16px; border-radius: 12px;
+    background: #fff7d1; border: 1px solid #e09b0033; color: #a35200; font-size: 13px; font-weight: 500; line-height: 18px;
+  }
+  .teya-status-banner .dot { width: 7px; height: 7px; border-radius: 50%; background: #e09b00; flex-shrink: 0; }
+
+  /* Request form */
+  .req { color: #e7000b; }
+  .mf-field { margin-bottom: 22px; }
+  .mf-label { display: block; font-size: 14px; font-weight: 600; color: #090806ec; margin-bottom: 6px; }
+  .mf-help { font-size: 13px; color: #16140e8c; line-height: 18px; margin-top: 6px; }
+  .mf-textarea {
+    width: 100%; min-height: 96px; padding: 12px 14px; border: 1px solid #756b5733;
+    border-radius: 12px; font-family: inherit; font-size: 14px; line-height: 20px; color: #090806ec;
+    resize: vertical; outline: none; transition: border-color 120ms ease-out, box-shadow 120ms ease-out;
+  }
+  .mf-textarea::placeholder { color: #211c1266; }
+  .mf-textarea:focus { border-color: #46520f; box-shadow: 0 0 0 3px #46520f1a; }
+  .mf-upload {
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 48px;
+    border: 1px dashed #756b5759; border-radius: 12px; background: #fafaf8; color: #090806ec;
+    font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+    transition: background-color 120ms ease-out, border-color 120ms ease-out;
+  }
+  .mf-upload:hover { background: #fafac7; border-color: #46520f; color: #29320c; }
+  .mf-file { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid #cfe898; background: #ecfcca; border-radius: 12px; }
+  .mf-file svg { color: #497d00; flex-shrink: 0; }
+  .mf-file-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #2c3d08; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mf-file-remove { background: transparent; border: none; color: #46520f; cursor: pointer; padding: 4px; border-radius: 6px; display: inline-flex; }
+  .mf-file-remove:hover { background: #0000000d; }
+  .mf-warning { display: flex; gap: 10px; padding: 12px 14px; background: #fff7d1; border: 1px solid #e09b0040; border-radius: 12px; }
+  .mf-warning svg { color: #a35200; flex-shrink: 0; margin-top: 1px; }
+  .mf-warning-text { font-size: 13px; line-height: 19px; color: #a35200; }
+  .pp-btn--primary:disabled { background: #ececc6; color: #a3a380; cursor: not-allowed; }
+  .pp-btn--primary:disabled:hover { background: #ececc6; }
+
+  /* Pending state */
+  .ec-status-card--pending { background: #fff7d1; border-color: #e09b0040; }
+  .ec-status-clock { width: 40px; height: 40px; border-radius: 50%; background: #e09b00; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ec-status-card--pending .ec-status-title { color: #7a3e00; }
+  .ec-status-card--pending .ec-status-sub { color: #a35200; }
+  .pp-product-badge--pending { background: #fbe3a6; color: #8a4b00; }
+  .td-data-value--wrap { max-width: 58%; text-align: right; font-weight: 500; white-space: normal; }
+
+  /* Payment Links alternative callout */
+  .pl-callout { display: flex; gap: 14px; align-items: flex-start; background: #ffffff; border: 1px solid #756b571a; border-radius: 16px; padding: 18px 20px; margin-bottom: 16px; }
+  .pl-callout-icon { width: 40px; height: 40px; border-radius: 10px; background: #ecfcca; color: #497d00; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pl-callout-title { font-size: 15px; font-weight: 600; color: #090806ec; margin-bottom: 4px; }
+  .pl-callout-body { font-size: 13px; line-height: 19px; color: #16140e8c; }
+  .pl-callout-link { display: inline-flex; align-items: center; gap: 4px; margin-top: 10px; font-size: 13px; font-weight: 600; color: #46520f; text-decoration: none; }
+  .pl-callout-link:hover { text-decoration: underline; }
+</style>
+</head>
+<body class="bg-[#fdfcf9] text-[#090806ec]">
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <button type="button" class="sidebar-company-btn">
+        <span class="sidebar-company-avatar">OG</span>
+        <span class="sidebar-company-name">Onion Garden</span>
+        <svg class="sidebar-company-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg><span>Home</span></a>
+        <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/></svg><span>Teya AI</span></a>
+      </nav>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Sales</div>
+        <nav class="sidebar-nav">
+          <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 5-6"/></svg><span>Overview</span></a>
+          <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg><span>Transactions</span></a>
+          <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1"/></svg><span>Pay by Link</span></a>
+        </nav>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Money</div>
+        <nav class="sidebar-nav">
+          <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Overview</span></a>
+          <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/></svg><span>Settlements</span></a>
+        </nav>
+      </div>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Settings</div>
+        <nav class="sidebar-nav">
+          <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-5h6v5"/></svg><span>Stores</span></a>
+          <a href="#" class="sidebar-item is-active"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg><span>Pricing &amp; products</span></a>
+        </nav>
+      </div>
+      <div class="sidebar-utility">
+        <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3M12 17h.01"/></svg><span>Help</span></a>
+        <a href="#" class="sidebar-item"><svg class="lemo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Logout</span></a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <main class="flex-1 min-w-0">
+    <div class="pp-page" id="motoPage">
+
+      <div class="teya-status-banner"><span class="dot"></span>MOTO setup — design prototype</div>
+
+      <!-- Breadcrumb -->
+      <div class="pp-page-header">
+        <button type="button" class="pp-breadcrumb-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Onion Garden
+        </button>
+        <span class="pp-breadcrumb-sep">/</span>
+        <a href="./pricing-products-v2.html" class="pp-breadcrumb-link" style="padding:6px 10px">Pricing plan &amp; products</a>
+        <span class="pp-breadcrumb-sep">/</span>
+        <span class="pp-breadcrumb-current">MOTO</span>
+      </div>
+
+      <!-- ===== INFO (pre-activation) ===== -->
+      <div class="prod-info" id="motoInfo" hidden>
+        <header class="pp-pane-header">
+          <div>
+            <h1 class="page-heading">MOTO</h1>
+            <p class="page-heading-sub">Take card payments over the phone — Mail Order / Telephone Order</p>
+          </div>
+        </header>
+
+        <section class="prod-hero">
+          <div class="prod-hero-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#46520f" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          </div>
+          <h2 class="prod-hero-title">Manual entry payments</h2>
+          <p class="prod-hero-body">Key card details directly into your terminal to accept phone and mail order payments.</p>
+          <div class="prod-hero-facts">
+            <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>Uses your existing terminals</span>
+            <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>No setup or monthly cost</span>
+            <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>Reviewed in 2–3 days</span>
+          </div>
+        </section>
+
+        <section class="pl-callout">
+          <span class="pl-callout-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg></span>
+          <div>
+            <div class="pl-callout-title">Can you send a payment link instead?</div>
+            <div class="pl-callout-body">Payment Links are the quickest and most secure way to get paid remotely. The customer pays on a secure checkout page — no card details need to be shared with you.</div>
+            <a class="pl-callout-link" href="./pay-by-link.html">Learn about Payment Links <span aria-hidden="true">›</span></a>
+          </div>
+        </section>
+
+        <section class="pf-card">
+          <h2 class="pf-card-title">How it works</h2>
+          <div class="prod-steps">
+            <div class="prod-step"><div class="prod-step-num">1</div><div><div class="prod-step-title">Take the order over the phone</div><div class="prod-step-body">Agree the order and total with your customer while they're on the call.</div></div></div>
+            <div class="prod-step"><div class="prod-step-num">2</div><div><div class="prod-step-title">Key the card details straight into the terminal</div><div class="prod-step-body">On an enabled terminal in MOTO mode, type the card number, expiry and CVV as the customer reads them out.</div></div></div>
+            <div class="prod-step"><div class="prod-step-num">3</div><div><div class="prod-step-title">Take the payment and send a receipt</div><div class="prod-step-body">Confirm the payment and send a receipt by email or SMS.</div></div></div>
+          </div>
+        </section>
+
+        <section class="pf-card">
+          <h2 class="pf-card-title">Pricing</h2>
+          <div class="td-data-list">
+            <div class="td-data-row"><span class="td-data-label">Surcharge</span><span class="td-data-value">+1%</span></div>
+          </div>
+          <p class="td-note">Applied on top of your standard acquiring fee for each manual entry payment. No setup or monthly fee. The surcharge reflects the higher fraud risk of card-not-present transactions.</p>
+        </section>
+
+        <section class="pf-card">
+          <h2 class="pf-card-title" style="margin-bottom:8px">Subject to approval</h2>
+          <p style="font-size:14px; line-height:21px; color:#16140e8c; margin:0">Because card-not-present payments carry more risk, every request goes through an eligibility check and isn't guaranteed. If approved, we'll enable MOTO on your chosen terminals — reviews are typically complete in 2–3 working days.</p>
+        </section>
+
+        <div class="prod-cta">
+          <button type="button" class="pp-btn pp-btn--primary" id="motoActivateBtn">Request MOTO</button>
+        </div>
+      </div>
+
+      <!-- ===== PENDING (under review) ===== -->
+      <div class="prod-config" id="motoPending" hidden>
+        <header class="pp-pane-header">
+          <div>
+            <h1 class="page-heading">MOTO</h1>
+            <p class="page-heading-sub">Take card payments over the phone</p>
+          </div>
+          <div class="td-header-actions">
+            <button type="button" class="td-more-btn" id="motoPendingMoreBtn" aria-label="More options">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+            </button>
+            <div class="td-more-menu" id="motoPendingMenu">
+              <button type="button" class="td-more-menu-item td-more-menu-item--danger" id="motoCancelRequest"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Cancel request</button>
+            </div>
+          </div>
+        </header>
+
+        <section class="ec-status-card ec-status-card--pending">
+          <span class="ec-status-clock"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+          <div class="ec-status-main">
+            <div class="ec-status-title">Your request is under review</div>
+            <div class="ec-status-sub">We're checking your eligibility. This usually takes 2–3 working days — we'll email you when there's a decision.</div>
+          </div>
+          <span class="pp-product-badge pp-product-badge--pending">Pending</span>
+        </section>
+
+        <section class="pf-card">
+          <h2 class="pf-card-title">What you submitted</h2>
+          <div class="td-data-list">
+            <div class="td-data-row"><span class="td-data-label">Requested</span><span class="td-data-value" id="motoReqDate">—</span></div>
+            <div class="td-data-row" style="align-items:flex-start"><span class="td-data-label">Terminals</span><span class="td-data-value td-data-value--wrap" id="motoReqTerminals">—</span></div>
+            <div class="td-data-row"><span class="td-data-label">Transaction history</span><span class="td-data-value" id="motoReqFile">—</span></div>
+          </div>
+        </section>
+
+        <section class="pf-card">
+          <h2 class="pf-card-title">What happens next</h2>
+          <div class="prod-steps">
+            <div class="prod-step"><div class="prod-step-num">1</div><div><div class="prod-step-title">We review your request</div><div class="prod-step-body">Our team checks your transaction history and account, usually within 2–3 working days.</div></div></div>
+            <div class="prod-step"><div class="prod-step-num">2</div><div><div class="prod-step-title">We let you know</div><div class="prod-step-body">You'll get an email with the decision. Not every request is approved.</div></div></div>
+            <div class="prod-step"><div class="prod-step-num">3</div><div><div class="prod-step-title">Start taking MOTO payments</div><div class="prod-step-body">Once approved, your selected terminals can take phone payments straight away.</div></div></div>
+          </div>
+        </section>
+
+        <div class="td-bottom-cta" style="margin-top:8px">
+          <button type="button" class="pp-btn pp-btn--secondary" id="motoSimApprove" style="width:100%">Simulate approval (demo)</button>
+        </div>
+      </div>
+
+      <!-- ===== CONFIG (active) ===== -->
+      <div class="prod-config" id="motoConfig" hidden>
+        <header class="pp-pane-header">
+          <div>
+            <h1 class="page-heading">MOTO</h1>
+            <p class="page-heading-sub">Take card payments over the phone</p>
+          </div>
+          <div class="td-header-actions">
+            <button type="button" class="td-more-btn" id="motoMoreBtn" aria-label="More options">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+            </button>
+            <div class="td-more-menu" id="motoMoreMenu">
+              <button type="button" class="td-more-menu-item" id="motoEditFromMenu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit terminals</button>
+              <button type="button" class="td-more-menu-item td-more-menu-item--danger" id="motoDeactivate"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>Turn off MOTO</button>
+            </div>
+          </div>
+        </header>
+
+        <section class="ec-status-card">
+          <span class="ec-status-check"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg></span>
+          <div class="ec-status-main">
+            <div class="ec-status-title" id="motoStatusText">MOTO is active</div>
+            <div class="ec-status-sub" id="motoStatusSub">Phone payments are switched on. +1% on top of your standard acquiring fee.</div>
+          </div>
+          <span class="pp-product-badge pp-product-badge--active">Active</span>
+        </section>
+
+        <section class="pf-card">
+          <h2 class="pf-card-title">Enabled terminals</h2>
+          <div id="motoEnabledList" class="moto-enabled-list"></div>
+          <button type="button" class="pp-btn pp-btn--secondary" id="motoEditTerminalsBtn" style="margin-top:16px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit terminals
+          </button>
+        </section>
+
+        <section class="pf-card">
+          <h2 class="pf-card-title">How to take a MOTO payment</h2>
+          <ol class="moto-howto">
+            <li>On an enabled terminal, choose <strong>MOTO</strong> from the main menu</li>
+            <li>Enter the payment amount</li>
+            <li>Key in the card number, expiry and CVV as the customer reads them out</li>
+            <li>Confirm the payment and send a receipt by email or SMS</li>
+          </ol>
+        </section>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Request modal (eligibility form) -->
+<div class="pp-modal-backdrop" id="motoRequestModal">
+  <div class="pp-modal">
+    <div class="pp-modal-header">
+      <h2 class="pp-modal-title">Request MOTO</h2>
+      <button type="button" class="pp-modal-close" data-moto-close><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="pp-modal-body">
+      <p class="pp-modal-desc">Choose which terminals you'd like to take MOTO payments, then upload your recent transaction history so we can review your eligibility.</p>
+
+      <div class="mf-field">
+        <label class="mf-label">Terminals <span class="req">*</span></label>
+        <div class="mf-help" style="margin-top:0; margin-bottom:8px">Tell us which terminals you'd like to use MOTO on. If approved, these are the terminals we'll switch it on for.</div>
+        <div class="moto-selectall">
+          <span id="motoReqSelectedCount">0 selected</span>
+          <button type="button" id="motoReqSelectAll">Select all</button>
+        </div>
+        <div id="motoReqTerminalList"></div>
+      </div>
+
+      <div class="mf-field">
+        <label class="mf-label">6 months of MOTO transaction history <span class="req">*</span></label>
+        <div class="mf-help" style="margin-top:0; margin-bottom:8px">Upload a statement or report from your previous acquirer showing at least 6 months of MOTO transaction history. This is required to assess your eligibility.</div>
+        <input type="file" id="motoFileInput" accept=".pdf,.csv,.xls,.xlsx" hidden>
+        <button type="button" class="mf-upload" id="motoUploadBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload transaction history
+        </button>
+        <div class="mf-file" id="motoFileChip" hidden style="margin-top:8px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="mf-file-name" id="motoFileName"></span>
+          <button type="button" class="mf-file-remove" id="motoFileRemove" aria-label="Remove file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="mf-help">Accepted formats: PDF, CSV, XLS. Max file size: 10 MB.</div>
+      </div>
+
+      <div class="mf-warning">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div class="mf-warning-text">Manual entry carries a higher fraud risk. Requests are reviewed within 2–3 working days and may not be approved for all merchants.</div>
+      </div>
+    </div>
+    <div class="pp-modal-footer">
+      <button type="button" class="pp-btn pp-btn--secondary" data-moto-close>Cancel</button>
+      <button type="button" class="pp-btn pp-btn--primary" id="motoSubmitRequest" disabled>Submit request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Terminals modal (after approval) -->
+<div class="pp-modal-backdrop" id="motoTermsModal">
+  <div class="pp-modal">
+    <div class="pp-modal-header">
+      <h2 class="pp-modal-title">Edit MOTO terminals</h2>
+      <button type="button" class="pp-modal-close" data-moto-close><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="pp-modal-body">
+      <p class="pp-modal-desc">Choose which of your terminals take MOTO payments. These are the terminals MOTO was approved for.</p>
+      <div class="moto-selectall">
+        <span id="motoSelectedCount">0 selected</span>
+        <button type="button" id="motoSelectAll">Select all</button>
+      </div>
+      <div id="motoTerminalList"></div>
+    </div>
+    <p class="pp-modal-fee">A +1% surcharge applies on top of your standard acquiring fee for every manual entry payment, whichever terminal takes it.</p>
+    <div class="pp-modal-footer">
+      <button type="button" class="pp-btn pp-btn--secondary" data-moto-close>Cancel</button>
+      <button type="button" class="pp-btn pp-btn--primary" id="motoSaveTerms">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Fallback data + helpers (used when not embedded in the portal runtime) ---------- */
+(function () {
+  var STORES = [
+    { id: 'store-camden',    name: 'Camden' },
+    { id: 'store-shoredtch', name: 'Shoreditch' },
+    { id: 'store-soho',      name: 'Soho' },
+    { id: 'store-brighton',  name: 'Brighton' }
+  ];
+  if (!window.teyaGetStoreName) {
+    window.teyaGetStoreName = function (id) { var s = STORES.find(function (x) { return x.id === id; }); return s ? s.name : id; };
+  }
+  if (!window.TEYA_TERMINALS) {
+    window.TEYA_TERMINALS = [
+      { id: 't-001', name: 'Till 1',      model: 'Teya Mini', storeId: 'store-camden',    status: 'active' },
+      { id: 't-002', name: 'Counter',     model: 'Teya Mini', storeId: 'store-shoredtch', status: 'active' },
+      { id: 't-003', name: 'Back office', model: 'Teya Pro',  storeId: 'store-soho',      status: 'active' },
+      { id: 't-006', name: 'Bar',         model: 'Teya Mini', storeId: 'store-camden',    status: 'active' }
+    ];
+  }
+  window.TEYA_TERMINALS.forEach(function (t) { if (!t.name) t.name = t.model; });
+  if (!window.TEYA_PRODUCTS) window.TEYA_PRODUCTS = {};
+  function readMoto() { try { return JSON.parse(localStorage.getItem('teya_moto')); } catch (e) { return null; } }
+  function writeMoto(m) {
+    try {
+      localStorage.setItem('teya_moto', JSON.stringify({
+        status: m.status || (m.active ? 'active' : 'none'),
+        useCase: m.useCase || '', fileName: m.fileName || '', requestedAt: m.requestedAt || '',
+        enabledTerminals: m.enabledTerminals || []
+      }));
+    } catch (e) {}
+  }
+  if (!window.TEYA_PRODUCTS.moto) window.TEYA_PRODUCTS.moto = readMoto() || { status: 'none', enabledTerminals: [] };
+  if (!window.TEYA_PRODUCTS.moto.status) window.TEYA_PRODUCTS.moto.status = window.TEYA_PRODUCTS.moto.active ? 'active' : 'none';
+  if (!window.teyaActivateProduct) window.teyaActivateProduct = function (k, cfg) { window.TEYA_PRODUCTS[k] = Object.assign({}, window.TEYA_PRODUCTS[k], { active: true, status: 'active' }, cfg); if (k === 'moto') writeMoto(window.TEYA_PRODUCTS.moto); };
+  if (!window.teyaUpdateProductConfig) window.teyaUpdateProductConfig = function (k, cfg) { window.TEYA_PRODUCTS[k] = Object.assign({}, window.TEYA_PRODUCTS[k], cfg); if (k === 'moto') writeMoto(window.TEYA_PRODUCTS.moto); };
+  if (!window.teyaToast) {
+    var wrap;
+    window.teyaToast = function (o) {
+      o = o || {};
+      if (!wrap) { wrap = document.createElement('div'); wrap.className = 'teya-toast-wrap'; document.body.appendChild(wrap); }
+      var el = document.createElement('div'); el.className = 'teya-toast';
+      el.innerHTML = '<span class="teya-toast-dot"></span><div class="teya-toast-body"><div class="teya-toast-title"></div><div class="teya-toast-text"></div></div>';
+      el.querySelector('.teya-toast-title').textContent = o.title || '';
+      el.querySelector('.teya-toast-text').textContent = o.body || '';
+      wrap.appendChild(el); requestAnimationFrame(function () { el.classList.add('in'); });
+      setTimeout(function () { el.classList.remove('in'); setTimeout(function () { el.remove(); }, 240); }, 3200);
+    };
+  }
+})();
+
+/* ---------- MOTO page logic ---------- */
+(function () {
+  var page = document.getElementById('motoPage');
+  if (!page) return;
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+  function activeTerminals() { return window.TEYA_TERMINALS.filter(function (t) { return t.status === 'active'; }); }
+
+  function buildTerminalListHTML(currentIds, attr) {
+    var terminals = activeTerminals();
+    if (terminals.length === 0) return '<div class="moto-enabled-empty">You need at least one active terminal to use MOTO.</div>';
+    var byStore = {};
+    terminals.forEach(function (t) { (byStore[t.storeId] = byStore[t.storeId] || []).push(t); });
+    return Object.keys(byStore).map(function (sid) {
+      var rows = byStore[sid].map(function (t) {
+        var checked = currentIds.indexOf(t.id) >= 0 ? 'checked' : '';
+        return '<label class="moto-terminal-item"><input type="checkbox" ' + attr + '="' + esc(t.id) + '" ' + checked + ' />' +
+          '<div><div class="moto-terminal-item-name">' + esc(t.name) + '</div>' +
+          '<div class="moto-terminal-item-meta">' + esc(t.model) + '</div></div></label>';
+      }).join('');
+      return '<div class="moto-store-group"><div class="moto-store-label">' + esc(window.teyaGetStoreName(sid)) + '</div><div class="moto-terminal-list">' + rows + '</div></div>';
+    }).join('');
+  }
+  function terminalSummary(ids) {
+    if (!ids || !ids.length) return '—';
+    var names = ids.map(function (id) { var t = window.TEYA_TERMINALS.find(function (x) { return x.id === id; }); return t ? t.name : id; });
+    return names.length + ' terminal' + (names.length === 1 ? '' : 's') + ' · ' + names.join(', ');
+  }
+
+  function statusOf() {
+    var m = window.TEYA_PRODUCTS.moto || {};
+    return m.status || (m.active ? 'active' : 'none');
+  }
+
+  function render() {
+    var product = window.TEYA_PRODUCTS.moto || { status: 'none', enabledTerminals: [] };
+    var status = statusOf();
+    document.getElementById('motoInfo').hidden = status !== 'none';
+    document.getElementById('motoPending').hidden = status !== 'pending';
+    document.getElementById('motoConfig').hidden = status !== 'active';
+
+    if (status === 'pending') {
+      document.getElementById('motoReqDate').textContent = product.requestedAt || 'Today';
+      document.getElementById('motoReqTerminals').textContent = terminalSummary(product.enabledTerminals || []);
+      document.getElementById('motoReqFile').textContent = product.fileName || '—';
+      return;
+    }
+    if (status !== 'active') return;
+
+    var enabled = product.enabledTerminals || [];
+    document.getElementById('motoStatusText').textContent = 'MOTO is active on ' + enabled.length + ' terminal' + (enabled.length === 1 ? '' : 's');
+    var listEl = document.getElementById('motoEnabledList');
+    if (enabled.length === 0) {
+      listEl.innerHTML = '<div class="moto-enabled-empty">No terminals have MOTO enabled yet. Use "Edit terminals" to add some.</div>';
+      return;
+    }
+    var terminals = enabled.map(function (id) { return window.TEYA_TERMINALS.find(function (t) { return t.id === id; }); }).filter(Boolean);
+    listEl.innerHTML = terminals.map(function (t) {
+      return '<div class="moto-enabled-item">' +
+        '<span class="cm-name-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="12" cy="19" r="1" fill="currentColor"/><rect x="7" y="6" width="10" height="6" rx="1"/></svg></span>' +
+        '<div><div class="moto-enabled-item-name">' + esc(t.name) + '</div>' +
+        '<div class="moto-enabled-item-meta">' + esc(window.teyaGetStoreName(t.storeId)) + ' · ' + esc(t.model) + '</div></div>' +
+        '<span class="moto-enabled-item-right"><span class="dot"></span>On</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  function todayStr() {
+    try { return new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
+    catch (e) { return 'Today'; }
+  }
+
+  /* ===== Request modal (terminals + transaction history) ===== */
+  var reqModal = document.getElementById('motoRequestModal');
+  var reqList = document.getElementById('motoReqTerminalList');
+  var fileInput = document.getElementById('motoFileInput');
+  var fileChip = document.getElementById('motoFileChip');
+  var fileNameEl = document.getElementById('motoFileName');
+  var submitBtn = document.getElementById('motoSubmitRequest');
+  var uploadedName = '';
+
+  function reqSelectedIds() {
+    return Array.prototype.slice.call(reqModal.querySelectorAll('[data-moto-req-terminal]:checked')).map(function (c) { return c.dataset.motoReqTerminal; });
+  }
+  function updateReqCount() {
+    var n = reqSelectedIds().length;
+    var all = reqModal.querySelectorAll('[data-moto-req-terminal]').length;
+    document.getElementById('motoReqSelectedCount').textContent = n + ' selected';
+    document.getElementById('motoReqSelectAll').textContent = (n === all && all > 0) ? 'Clear all' : 'Select all';
+  }
+  function validateRequest() {
+    submitBtn.disabled = !(reqSelectedIds().length > 0 && uploadedName);
+  }
+  function openRequest() {
+    reqList.innerHTML = buildTerminalListHTML([], 'data-moto-req-terminal');
+    uploadedName = ''; fileInput.value = ''; fileChip.hidden = true; fileNameEl.textContent = '';
+    updateReqCount(); validateRequest();
+    requestAnimationFrame(function () { reqModal.classList.add('open'); });
+    document.body.style.overflow = 'hidden';
+  }
+  reqModal.addEventListener('change', function (e) { if (e.target.matches('[data-moto-req-terminal]')) { updateReqCount(); validateRequest(); } });
+  document.getElementById('motoReqSelectAll').addEventListener('click', function () {
+    var boxes = reqModal.querySelectorAll('[data-moto-req-terminal]');
+    var allOn = reqSelectedIds().length === boxes.length;
+    boxes.forEach(function (b) { b.checked = !allOn; });
+    updateReqCount(); validateRequest();
+  });
+  document.getElementById('motoUploadBtn').addEventListener('click', function () { fileInput.click(); });
+  fileInput.addEventListener('change', function () {
+    if (fileInput.files && fileInput.files[0]) {
+      uploadedName = fileInput.files[0].name;
+      fileNameEl.textContent = uploadedName; fileChip.hidden = false;
+    }
+    validateRequest();
+  });
+  document.getElementById('motoFileRemove').addEventListener('click', function () {
+    uploadedName = ''; fileInput.value = ''; fileChip.hidden = true; fileNameEl.textContent = '';
+    validateRequest();
+  });
+  submitBtn.addEventListener('click', function () {
+    var ids = reqSelectedIds();
+    window.teyaUpdateProductConfig('moto', { status: 'pending', active: false, fileName: uploadedName, requestedAt: todayStr(), enabledTerminals: ids });
+    closeModals();
+    window.teyaToast({ title: 'Request submitted', body: "We'll review it within 2–3 working days and email you the decision." });
+    render();
+  });
+
+  /* ===== Terminals modal (after approval) ===== */
+  var termsModal = document.getElementById('motoTermsModal');
+  function updateCount() {
+    var n = termsModal.querySelectorAll('[data-moto-terminal]:checked').length;
+    document.getElementById('motoSelectedCount').textContent = n + ' selected';
+    var all = termsModal.querySelectorAll('[data-moto-terminal]').length;
+    document.getElementById('motoSelectAll').textContent = (n === all && all > 0) ? 'Clear all' : 'Select all';
+  }
+  function openTerms() {
+    var terminals = activeTerminals();
+    var current = (window.TEYA_PRODUCTS.moto && window.TEYA_PRODUCTS.moto.enabledTerminals) || [];
+    var listEl = document.getElementById('motoTerminalList');
+    if (terminals.length === 0) {
+      listEl.innerHTML = '<div class="moto-enabled-empty">You need at least one active terminal to use MOTO.</div>';
+    } else {
+      var byStore = {};
+      terminals.forEach(function (t) { (byStore[t.storeId] = byStore[t.storeId] || []).push(t); });
+      listEl.innerHTML = Object.keys(byStore).map(function (sid) {
+        var rows = byStore[sid].map(function (t) {
+          var checked = current.indexOf(t.id) >= 0 ? 'checked' : '';
+          return '<label class="moto-terminal-item"><input type="checkbox" data-moto-terminal="' + esc(t.id) + '" ' + checked + ' />' +
+            '<div><div class="moto-terminal-item-name">' + esc(t.name) + '</div>' +
+            '<div class="moto-terminal-item-meta">' + esc(t.model) + '</div></div></label>';
+        }).join('');
+        return '<div class="moto-store-group"><div class="moto-store-label">' + esc(window.teyaGetStoreName(sid)) + '</div><div class="moto-terminal-list">' + rows + '</div></div>';
+      }).join('');
+    }
+    requestAnimationFrame(function () { termsModal.classList.add('open'); });
+    document.body.style.overflow = 'hidden';
+    updateCount();
+  }
+  document.getElementById('motoEditTerminalsBtn').addEventListener('click', openTerms);
+  document.getElementById('motoEditFromMenu').addEventListener('click', function () { closeMenus(); openTerms(); });
+  document.getElementById('motoSelectAll').addEventListener('click', function () {
+    var boxes = termsModal.querySelectorAll('[data-moto-terminal]');
+    var allOn = termsModal.querySelectorAll('[data-moto-terminal]:checked').length === boxes.length;
+    boxes.forEach(function (b) { b.checked = !allOn; });
+    updateCount();
+  });
+  termsModal.addEventListener('change', function (e) { if (e.target.matches('[data-moto-terminal]')) updateCount(); });
+  document.getElementById('motoSaveTerms').addEventListener('click', function () {
+    var ids = Array.prototype.slice.call(termsModal.querySelectorAll('[data-moto-terminal]:checked')).map(function (c) { return c.dataset.motoTerminal; });
+    window.teyaUpdateProductConfig('moto', { enabledTerminals: ids });
+    closeModals();
+    window.teyaToast({ title: 'Terminals updated', body: ids.length + ' terminal' + (ids.length === 1 ? '' : 's') + ' now accept MOTO.' });
+    render();
+  });
+
+  /* ===== shared modal close ===== */
+  function closeModals() {
+    reqModal.classList.remove('open'); termsModal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  [reqModal, termsModal].forEach(function (m) {
+    m.addEventListener('click', function (e) {
+      if (e.target.closest('[data-moto-close]')) return closeModals();
+      if (e.target === m) return closeModals();
+    });
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModals(); });
+
+  document.getElementById('motoActivateBtn').addEventListener('click', openRequest);
+
+  /* ===== overflow menus ===== */
+  var activeMenu = document.getElementById('motoMoreMenu');
+  var pendingMenu = document.getElementById('motoPendingMenu');
+  function closeMenus() { activeMenu.classList.remove('open'); pendingMenu.classList.remove('open'); }
+  document.getElementById('motoMoreBtn').addEventListener('click', function (e) { e.stopPropagation(); pendingMenu.classList.remove('open'); activeMenu.classList.toggle('open'); });
+  document.getElementById('motoPendingMoreBtn').addEventListener('click', function (e) { e.stopPropagation(); activeMenu.classList.remove('open'); pendingMenu.classList.toggle('open'); });
+  document.addEventListener('click', function () { closeMenus(); });
+
+  document.getElementById('motoDeactivate').addEventListener('click', function () {
+    closeMenus();
+    window.teyaUpdateProductConfig('moto', { status: 'none', active: false, enabledTerminals: [], useCase: '', fileName: '', requestedAt: '' });
+    window.teyaToast({ title: 'MOTO turned off', body: "Phone payments are switched off. You'll need to request MOTO again to switch it back on." });
+    render();
+  });
+  document.getElementById('motoCancelRequest').addEventListener('click', function () {
+    closeMenus();
+    window.teyaUpdateProductConfig('moto', { status: 'none', active: false, enabledTerminals: [], useCase: '', fileName: '', requestedAt: '' });
+    window.teyaToast({ title: 'Request cancelled', body: 'Your MOTO request has been withdrawn.' });
+    render();
+  });
+  document.getElementById('motoSimApprove').addEventListener('click', function () {
+    var current = (window.TEYA_PRODUCTS.moto && window.TEYA_PRODUCTS.moto.enabledTerminals) || [];
+    window.teyaActivateProduct('moto', { enabledTerminals: current });
+    window.teyaToast({ title: 'MOTO approved', body: 'MOTO is now active on your selected terminal' + (current.length === 1 ? '' : 's') + '.' });
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
