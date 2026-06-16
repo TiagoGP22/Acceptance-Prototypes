@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Journeys: Invoice Creation UX</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --lime: #DDE048;
+            --blue: #008BB9;
+            --near-black: #151515;
+            --lime-light: #F1F3B6;
+            --dark-lime: #C0C32C;
+            --light-grey: #F5F5F5;
+            --mid-grey: #888888;
+        }
+
+        body {
+            font-family: 'Figtree', 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--near-black);
+            background: white;
+            line-height: 1.5;
+        }
+
+        .title-banner {
+            background-color: var(--lime);
+            padding: 48px 40px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .draft-badge {
+            display: inline-block;
+            background-color: var(--near-black);
+            color: var(--lime);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .title-banner h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .title-banner .subtitle {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .title-banner .meta-line {
+            font-size: 13px;
+            color: var(--near-black);
+            opacity: 0.7;
+        }
+
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            border-bottom: 2px solid var(--lime);
+            overflow-x: auto;
+            padding: 10px 0;
+            z-index: 100;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .sticky-nav-inner {
+            display: flex;
+            gap: 8px;
+            padding: 0 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .sticky-nav a {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--near-black);
+            text-decoration: none;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .sticky-nav a:hover {
+            background-color: var(--lime-light);
+        }
+
+        .sticky-nav a.active {
+            background-color: var(--lime);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .journey-card {
+            background-color: white;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            scroll-margin-top: 100px;
+        }
+
+        .journey-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .journey-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            background-color: var(--lime);
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--near-black);
+        }
+
+        .journey-title-block h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .journey-description {
+            font-size: 14px;
+            color: var(--mid-grey);
+        }
+
+        .section-heading {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--near-black);
+            margin-top: 24px;
+            margin-bottom: 12px;
+            padding-left: 12px;
+            border-left: 3px solid var(--lime);
+        }
+
+        .subsection-heading {
+            font-size: 13px;
+            font-weight: 700;
+            color: #555;
+            margin-top: 16px;
+            margin-bottom: 6px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        code {
+            font-family: ui-monospace, 'Menlo', 'Monaco', monospace;
+            background-color: var(--light-grey);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12.5px;
+            color: #0a5470;
+        }
+
+        p {
+            margin-bottom: 12px;
+        }
+
+        .mermaid-container {
+            background-color: var(--light-grey);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .mermaid-container pre {
+            margin: 0;
+            background: none;
+            padding: 0;
+        }
+
+        .assumptions-panel {
+            background-color: var(--lime-light);
+            border-left: 3px solid var(--lime);
+            border-radius: 6px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+
+        .global-events-section,
+        .appendix-section {
+            margin-bottom: 32px;
+        }
+
+        .global-events-section h2,
+        .appendix-section h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            margin-top: 48px;
+        }
+
+        .appendix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 13px;
+        }
+
+        .appendix-table th {
+            background-color: var(--lime);
+            color: var(--near-black);
+            padding: 12px;
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .appendix-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .appendix-table tbody tr:nth-child(odd) {
+            background-color: #fafafa;
+        }
+
+        a {
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        strong {
+            font-weight: 700;
+        }
+
+        em {
+            font-style: italic;
+        }
+
+        .footer {
+            margin-top: 64px;
+            padding: 32px 0;
+            text-align: center;
+            color: var(--mid-grey);
+            font-size: 13px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <!-- Title Banner -->
+    <div class="title-banner">
+        <div class="draft-badge">DRAFT</div>
+        <h1>User Journeys</h1>
+        <div class="subtitle">Invoice Creation UX</div>
+        <div class="meta-line">Generated from benchmark · Last updated: 2026-04-09</div>
+    </div>
+
+    <!-- Sticky Navigation -->
+    <nav class="sticky-nav">
+        <div class="sticky-nav-inner">
+
+            <a href="#journey-0">Journey 0</a>
+            <a href="#journey-1">Journey 1</a>
+            <a href="#journey-2">Journey 2</a>
+            <a href="#journey-3">Journey 3</a>
+            <a href="#journey-4">Journey 4</a>
+            <a href="#journey-5">Journey 5</a>
+            <a href="#journey-6">Journey 6</a>
+            <a href="#journey-7">Journey 7</a>
+            <a href="#journey-8">Journey 8</a>
+            <a href="#journey-9">Journey 9</a>
+            <a href="#global-events">Global Events</a>
+            <a href="#appendix">Appendix</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <div class="journey-card" id="journey-0">
+            <div class="journey-header">
+                <div class="journey-number">0</div>
+                <div class="journey-title-block">
+                    <h2>First-Time Merchant Onboarding</h2>
+                    <p class="journey-description">A merchant opens Teya Invoices for the first time. Rather than asking them to type their business name, VAT number, address, and bank details manually, we offer a single shortcut: upload an existing invoice and we&#x27;ll scrape their own details from it. This flow removes the &quot;empty state tax&quot; that kills most invoicing activations.</p>
+                </div>
+            </div>
+            <div class="mermaid-container">
+                <pre class="mermaid">
+graph TD
+    A[First-time merchant<br>opens invoices] --> B[Welcome screen:<br>3-step progress indicator]
+    B --> C{Set-up shortcut}
+    C -->|Upload existing invoice| D[Upload zone:<br>PDF, JPG, PNG up to 10MB]:::track
+    C -->|Skip, enter manually| E[→ Journey 1 with<br>empty business details]:::track
+
+    D --> F[AI scans document:<br>animated scan-line preview]:::track
+    F --> G{Extraction quality}
+    G -->|High confidence| H[Pre-fill all fields:<br>business name, VAT,<br>address, company no.]:::track
+    G -->|Partial| I[Pre-fill confident fields,<br>flag uncertain ones<br>with 'please verify']:::assumed
+    G -->|Failed| J[Show retry or<br>manual fallback]:::assumed
+
+    H --> K[Review screen:<br>confidence tiers green/amber]
+    I --> K
+    J --> C
+
+    K --> L{Merchant reviews<br>each field}
+    L -->|Edit inline| M[Update field]:::track
+    L -->|Accept| N[Keep as-is]
+    M --> O{All fields reviewed?}
+    N --> O
+    O -->|No| L
+    O -->|Yes| P[Save business profile]:::track
+
+    P --> Q[Land in editor<br>with details pre-populated]:::track
+    Q --> R[→ Journey 1<br>from line items step]
+
+    classDef assumed fill:#fff3cd,stroke:#ffc107
+    classDef track fill:#d4edda,stroke:#28a745
+                </pre>
+            </div>
+            <h3 class="section-heading">Page Views</h3>
+<ul>
+<li><code>onboarding_welcome_viewed</code> — merchant opened the first-time welcome screen</li>
+<li><code>onboarding_upload_screen_viewed</code> — upload zone screen displayed</li>
+<li><code>onboarding_processing_screen_viewed</code> — animated processing screen shown (extracting details)</li>
+<li><code>onboarding_review_screen_viewed</code> — field review screen displayed (confidence tiers visible)</li>
+<li><code>onboarding_success_screen_viewed</code> — business profile saved, landing in editor</li>
+</ul>
+            <h3 class="section-heading">Upload Interactions</h3>
+<ul>
+<li><code>onboarding_upload_started</code> — merchant initiated file upload</li>
+<li><code>onboarding_upload_file_selected</code> (file_type: pdf|image|screenshot, file_size_bytes) — file chosen</li>
+<li><code>onboarding_upload_progress</code> (bytes_uploaded, total_bytes) — upload in progress (fire every 500ms or per chunk)</li>
+<li><code>onboarding_upload_completed</code> (file_type, file_size, duration_ms) — file upload finished</li>
+<li><code>onboarding_upload_failed</code> (error_type, file_type, file_size) — upload failed (network error, size exceeded, unsupported type)</li>
+<li><code>onboarding_upload_retry_clicked</code> — merchant tapped &quot;Try another file&quot;</li>
+</ul>
+            <h3 class="section-heading">AI Extraction</h3>
+<ul>
+<li><code>onboarding_extraction_started</code> (file_type) — AI service began processing</li>
+<li><code>onboarding_extraction_completed</code> (confidence_level: high|partial|failed, fields_extracted_count, processing_time_ms) — extraction finished</li>
+<li><code>onboarding_extraction_failed</code> (error_type, error_message) — extraction service error</li>
+</ul>
+            <h3 class="section-heading">Field Review Interactions</h3>
+<ul>
+<li><code>onboarding_field_viewed</code> (field_name) — merchant scrolled to or focused on a field</li>
+<li><code>onboarding_field_focused</code> (field_name, confidence: high|partial) — merchant tapped/clicked a field (form focus)</li>
+<li><code>onboarding_field_changed</code> (field_name, previous_value, new_value, confidence_was: high|partial) — merchant edited a field</li>
+<li><code>onboarding_field_validation_error</code> (field_name, error_type) — field validation failed (e.g. invalid email, malformed VAT)</li>
+<li><code>onboarding_field_validation_passed</code> (field_name) — field passed validation after correction</li>
+<li><code>onboarding_confidence_badge_clicked</code> (field_name, confidence_level) — merchant clicked the high/partial confidence indicator</li>
+<li><code>onboarding_field_blur</code> (field_name, final_value) — merchant left a field (blur event, for time-on-field measurement)</li>
+</ul>
+            <h3 class="section-heading">Navigation</h3>
+<ul>
+<li><code>onboarding_skipped</code> — merchant chose &quot;Skip, enter manually&quot; from welcome screen</li>
+<li><code>onboarding_completed</code> — merchant tapped &quot;Save and continue&quot; after reviewing all fields</li>
+<li><code>onboarding_back_clicked</code> — merchant tapped back button during onboarding</li>
+</ul>
+            <h3 class="section-heading">Dismissals &amp; Errors</h3>
+<ul>
+<li><code>onboarding_error_banner_shown</code> (error_type) — error message displayed (e.g. upload failed)</li>
+<li><code>onboarding_error_banner_dismissed</code> — merchant closed error banner</li>
+<li><code>onboarding_abandoned</code> — merchant navigated away without completing (drop-off signal)</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="journey-card" id="journey-1">
+            <div class="journey-header">
+                <div class="journey-number">1</div>
+                <div class="journey-title-block">
+                    <h2>New Invoice from Scratch</h2>
+                    <p class="journey-description">The core happy path. A merchant opens the invoice editor, fills in client details, adds line items with optional tax and discounts, previews the result, configures payment, and chooses a delivery channel. This is the most common flow and the one every other journey eventually merges into.</p>
+                </div>
+            </div>
+            <div class="mermaid-container">
+                <pre class="mermaid">
+graph TD
+    A[Merchant taps 'New Invoice'] --> B[Single-page editor loads<br>with smart defaults]
+    B --> C{Client field}
+    C -->|Type name/email| D{Client found?}
+    D -->|Yes| E[Auto-fill billing address,<br>currency, language]
+    D -->|No| F[Create new client inline]:::assumed
+    F --> G{Client details valid?}:::assumed
+    G -->|Yes| E
+    G -->|No| H[Show validation error]:::assumed
+    H --> F
+    C -->|Skip for now| I[Continue without client]:::assumed
+
+    E --> J[Add line items]
+    I --> J
+
+    J --> K{How to add items?}
+    K -->|Manual entry| L[Type description, qty, rate]
+    K -->|From catalogue| M[Search saved products/services]
+    L --> N{Add tax/discount?}
+    M --> N
+
+    N -->|Yes| O[Configure inline tax rate<br>and/or discount per item]
+    N -->|No| P[Running total updates]
+    O --> P
+
+    P --> Q{More line items?}
+    Q -->|Yes| J
+    Q -->|No| R[Review summary panel]
+
+    R --> S{Live preview?}
+    S -->|Open preview| T[Side-panel shows PDF /<br>Email / Payment Page tabs]:::track
+    S -->|Skip preview| U[Configure payment methods]
+    T --> U
+
+    U --> V[Select accepted methods<br>— card, bank, PayPal, etc.]
+    V --> W[Payment link auto-generated]:::track
+
+    W --> X{Set due date}
+    X -->|Smart shortcut<br>Net 15/30/60| Y[Due date set]
+    X -->|Custom date| Y
+    X -->|No due date| Z[Flag: no due date warning]:::assumed
+
+    Y --> AA{Ready to send?}
+    Z --> AA
+    AA -->|Yes| BB[Confirmation modal:<br>recipient, total, due date, methods]:::track
+    AA -->|Save as draft| CC[Invoice saved to drafts]:::track
+    AA -->|Cancel| DD[Discard or keep draft?]:::assumed
+    DD -->|Keep draft| CC
+    DD -->|Discard| EE[Return to dashboard]:::assumed
+
+    BB --> FF{Delivery channel}
+    FF -->|Email| GG[Send via email]:::track
+    FF -->|Shareable link| HH[Generate and copy link]:::track
+    FF -->|SMS| II[Send via SMS]:::track
+    FF -->|PDF download| JJ[Download PDF]:::track
+    FF -->|Schedule send| KK[Pick date/time, queue]:::track
+
+    GG --> LL[Success screen +<br>next actions]:::track
+    HH --> LL
+    II --> LL
+    JJ --> LL
+    KK --> LL
+
+    LL --> MM{Post-send prompts}
+    MM -->|Set up reminders| NN[Configure auto-reminders]
+    MM -->|Make recurring| OO[Set recurring schedule]
+    MM -->|Done| PP[Return to invoice dashboard]
+
+    classDef assumed fill:#fff3cd,stroke:#ffc107
+    classDef track fill:#d4edda,stroke:#28a745
+                </pre>
+            </div>
+            <h3 class="section-heading">Page Views &amp; Screen Loads</h3>
+<ul>
+<li><code>invoice_editor_opened</code> — merchant tapped &quot;New Invoice&quot; (funnel entry point)</li>
+<li><code>invoice_editor_screen_loaded</code> (time_to_interactive_ms) — page fully interactive</li>
+<li><code>invoice_editor_mobile_preview_opened</code> — preview panel opened on mobile</li>
+<li><code>payment_config_panel_opened</code> — payment settings accordion expanded</li>
+<li><code>due_date_picker_opened</code> — date picker modal shown</li>
+<li><code>confirmation_modal_opened</code> — pre-send confirmation dialog displayed</li>
+<li><code>invoice_editor_exited</code> — merchant navigated away from editor (drop-off signal)</li>
+</ul>
+            <h3 class="section-heading">Client Field Interactions</h3>
+<ul>
+<li><code>client_field_focused</code> — merchant clicked/tapped on client input</li>
+<li><code>client_field_changed</code> (search_term_length) — merchant typed in client search box</li>
+<li><code>client_autocomplete_dropdown_opened</code> — dropdown appeared</li>
+<li><code>client_autocomplete_suggestion_shown</code> (client_count, has_recent: boolean) — suggestions displayed</li>
+<li><code>client_autocomplete_selected</code> (client_id, matched_by: name|email) — merchant selected from dropdown</li>
+<li><code>client_new_inline_modal_opened</code> — modal to create new client appeared</li>
+<li><code>client_new_created</code> (fields_provided: name|email|address) — new client created inline</li>
+<li><code>client_field_validation_error</code> (error_type: invalid_email|required|...) — validation failed</li>
+<li><code>client_field_skipped</code> — merchant chose to continue without selecting client</li>
+<li><code>client_field_blur</code> (has_value: boolean) — merchant left field without selecting</li>
+</ul>
+            <h3 class="section-heading">Currency &amp; Localization</h3>
+<ul>
+<li><code>currency_selector_opened</code> — currency dropdown tapped</li>
+<li><code>currency_changed</code> (from_currency, to_currency, invoice_total) — merchant switched currency</li>
+<li><code>currency_auto_detected</code> (country_code, detected_currency, merchant_accepts: boolean) — system suggested currency based on business location</li>
+</ul>
+            <h3 class="section-heading">Invoice Number</h3>
+<ul>
+<li><code>invoice_number_displayed</code> (format, next_number) — invoice number shown</li>
+<li><code>invoice_number_copied</code> — merchant copied to clipboard</li>
+</ul>
+            <h3 class="section-heading">Due Date Interactions</h3>
+<ul>
+<li><code>due_date_chip_clicked</code> (chip_label: &quot;Net 15&quot;|&quot;Net 30&quot;|&quot;Net 60&quot;|&quot;Custom&quot;) — merchant selected a preset or custom</li>
+<li><code>due_date_custom_picker_opened</code> — date picker modal shown</li>
+<li><code>due_date_selected</code> (due_date, days_from_today) — merchant picked a date</li>
+<li><code>due_date_warning_shown</code> — &quot;no due date set&quot; warning banner displayed</li>
+<li><code>due_date_warning_dismissed</code> — merchant closed warning</li>
+</ul>
+            <h3 class="section-heading">Line Item Interactions</h3>
+<ul>
+<li><code>line_item_added</code> (position, source: manual|catalogue|template) — line item added to invoice</li>
+<li><code>line_item_description_focused</code> (position) — merchant clicked on description field</li>
+<li><code>line_item_description_changed</code> (position, description_length) — merchant typed description</li>
+<li><code>line_item_qty_focused</code> (position) — merchant clicked qty field</li>
+<li><code>line_item_qty_changed</code> (position, new_qty, previous_qty) — merchant updated quantity</li>
+<li><code>line_item_rate_focused</code> (position) — merchant clicked rate/price field</li>
+<li><code>line_item_rate_changed</code> (position, new_rate, previous_rate, currency) — merchant updated rate</li>
+<li><code>line_item_tax_expanded</code> (position, has_tax_previously: boolean) — merchant opened tax/discount options</li>
+<li><code>line_item_tax_rate_selected</code> (position, tax_rate_percent) — merchant chose tax rate (may be from preset or custom)</li>
+<li><code>line_item_discount_applied</code> (position, discount_type: fixed|percent, discount_amount) — discount added to line item</li>
+<li><code>line_item_total_recalculated</code> (position, old_total, new_total) — total recalculated on qty/rate/tax change</li>
+<li><code>line_item_deleted</code> (position, description) — merchant removed line item</li>
+<li><code>line_item_duplicate_clicked</code> (position) — merchant duplicated line item</li>
+<li><code>add_line_item_button_clicked</code> — merchant tapped &quot;Add item&quot; button</li>
+<li><code>add_from_catalogue_clicked</code> — merchant tapped &quot;Use from catalogue/services&quot;</li>
+<li><code>catalogue_search_performed</code> (search_term, result_count) — merchant searched saved products</li>
+<li><code>catalogue_item_selected</code> (product_id, product_name, pre_filled_fields: list) — merchant selected from catalogue</li>
+</ul>
+            <h3 class="section-heading">Running Total &amp; Summary</h3>
+<ul>
+<li><code>invoice_summary_updated</code> (subtotal, tax_total, discount_total, final_total) — totals recalculated</li>
+<li><code>invoice_summary_panel_viewed</code> — merchant scrolled to or focused on summary</li>
+<li><code>invoice_total_changed</code> (previous_total, new_total, change_reason) — total changed (could be due to item add/remove, qty, rate, tax, discount)</li>
+</ul>
+            <h3 class="section-heading">Preview Panel</h3>
+<ul>
+<li><code>preview_panel_opened</code> (preview_type) — merchant opened preview panel</li>
+<li><code>preview_tab_clicked</code> (tab: pdf|email|payment_page) — merchant switched preview tabs</li>
+<li><code>preview_updated</code> (total_time_to_update_ms) — preview re-rendered (live as merchant edits)</li>
+<li><code>preview_download_clicked</code> — merchant initiated preview PDF download</li>
+<li><code>preview_panel_closed</code> — merchant closed preview</li>
+</ul>
+            <h3 class="section-heading">Payment Configuration</h3>
+<ul>
+<li><code>payment_methods_section_viewed</code> — payment methods accordion visible</li>
+<li><code>payment_method_toggled</code> (method: card|bank_transfer|paypal|..., new_state: on|off) — merchant enabled/disabled payment method</li>
+<li><code>payment_method_expanded</code> (method) — merchant tapped payment method to see details</li>
+<li><code>payment_fee_shown</code> (method, fee_type: percentage|fixed, fee_amount) — fee displayed</li>
+<li><code>payment_method_validation_error</code> (method, error_type) — payment config error shown (e.g. no payment method selected)</li>
+<li><code>payment_link_generated</code> (payment_link_url) — payment page link created</li>
+</ul>
+            <h3 class="section-heading">Advanced Settings (collapse/expand)</h3>
+<ul>
+<li><code>advanced_settings_expanded</code> — merchant opened &quot;Advanced&quot; or &quot;Business details&quot; section</li>
+<li><code>advanced_settings_collapsed</code> — merchant closed section</li>
+<li><code>business_name_changed</code> (new_name) — merchant edited business name</li>
+<li><code>business_vat_changed</code> (new_vat) — merchant edited VAT number</li>
+<li><code>business_address_changed</code> (new_address) — merchant edited business address</li>
+<li><code>business_details_validation_error</code> (field, error_type) — validation error on business field</li>
+</ul>
+            <h3 class="section-heading">Discount (Invoice-Level)</h3>
+<ul>
+<li><code>invoice_discount_expanded</code> — merchant opened invoice-level discount section</li>
+<li><code>invoice_discount_type_selected</code> (discount_type: fixed|percent) — merchant chose discount type</li>
+<li><code>invoice_discount_applied</code> (discount_amount, discount_type, new_total) — invoice-level discount applied</li>
+<li><code>invoice_discount_removed</code> — merchant cleared discount</li>
+</ul>
+            <h3 class="section-heading">Auto-Save</h3>
+<ul>
+<li><code>auto_save_triggered</code> (change_type, time_since_last_save_ms) — background auto-save fired</li>
+<li><code>auto_save_completed</code> (save_duration_ms, data_size_bytes) — save succeeded</li>
+<li><code>auto_save_failed</code> (error_type) — auto-save failed (network error, auth timeout)</li>
+<li><code>draft_status_indicator_shown</code> — &quot;Draft · Saved&quot; indicator displayed</li>
+<li><code>draft_status_indicator_hidden</code> — indicator hidden (successful save confirmed)</li>
+</ul>
+            <h3 class="section-heading">Confirmation Modal</h3>
+<ul>
+<li><code>confirmation_modal_opened</code> (client_name, invoice_total, due_date) — pre-send modal displayed</li>
+<li><code>confirmation_modal_details_reviewed</code> — merchant reviewed modal contents</li>
+<li><code>confirmation_modal_edited_clicked</code> — merchant tapped &quot;Go back and edit&quot;</li>
+<li><code>confirmation_modal_confirmed</code> — merchant approved and proceeded to delivery</li>
+<li><code>confirmation_modal_save_draft_clicked</code> — merchant chose &quot;Save as draft&quot; from modal</li>
+</ul>
+            <h3 class="section-heading">Draft Saving</h3>
+<ul>
+<li><code>draft_save_initiated</code> (trigger: manual_button|nav_away|timeout) — draft save started</li>
+<li><code>draft_saved</code> (save_duration_ms, invoice_id) — draft created/updated successfully</li>
+<li><code>draft_save_failed</code> (error_type) — draft save failed</li>
+<li><code>draft_discard_prompted</code> — &quot;Keep draft or discard?&quot; confirmation shown</li>
+<li><code>draft_discard_confirmed</code> — merchant chose &quot;Discard&quot;</li>
+<li><code>draft_keep_confirmed</code> — merchant chose &quot;Keep as draft&quot;</li>
+</ul>
+            <h3 class="section-heading">Navigation &amp; Drop-off</h3>
+<ul>
+<li><code>invoice_editor_back_clicked</code> — merchant tapped back button</li>
+<li><code>invoice_editor_nav_away</code> (from_section, unsaved_changes: boolean) — merchant navigated away</li>
+<li><code>invoice_editor_abandoned</code> (time_in_editor_ms, completed_sections: list) — merchant dropped off without saving</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="journey-card" id="journey-2">
+            <div class="journey-header">
+                <div class="journey-number">2</div>
+                <div class="journey-title-block">
+                    <h2>Invoice from Existing Context (Job / Contract / Project)</h2>
+                    <p class="journey-description">The merchant has prior work context — a completed job, an active contract, or a project — and wants to generate an invoice from it. Most fields are pre-populated, so the flow is about reviewing and adjusting rather than filling in from scratch.</p>
+                </div>
+            </div>
+            <div class="mermaid-container">
+                <pre class="mermaid">
+graph TD
+    A{Entry point} --> B[From job/project list]
+    A --> C[From contract dashboard]
+    A --> D[From 'New Invoice' +<br>select source]
+
+    B --> E[Select completed job<br>or uninvoiced project]
+    C --> F[Select active contract<br>with billing period]
+    D --> G{Source picker:<br>job, contract, or blank}
+    G -->|Job/project| E
+    G -->|Contract| F
+    G -->|Blank| H[→ Journey 1:<br>New from scratch]
+
+    E --> I[Auto-populate:<br>client, line items,<br>amounts from job]:::track
+    F --> J[Auto-calculate:<br>working days, rates,<br>amounts from contract terms]:::track
+
+    I --> K[Single-page editor loads<br>with pre-filled data]
+    J --> K
+
+    K --> L{Review client details}
+    L -->|Correct| M[Keep as-is]
+    L -->|Update needed| N[Edit inline —<br>address, currency, etc.]:::assumed
+    N --> M
+
+    M --> O{Review line items}
+    O -->|All correct| P[Keep pre-filled items]
+    O -->|Adjust amounts| Q[Edit qty, rate,<br>or description]
+    O -->|Remove items| R[Delete uninvoiced items<br>not yet ready to bill]:::assumed
+    O -->|Add items| S[Add manual items<br>on top of pre-filled]:::assumed
+    Q --> T{More adjustments?}
+    R --> T
+    S --> T
+    T -->|Yes| O
+    T -->|No| P
+
+    P --> U{Partial invoice?}:::assumed
+    U -->|Invoice all| V[Full amount from source]
+    U -->|Invoice subset| W[Select which items /<br>amount to bill now]:::assumed
+    W --> X[Remaining flagged as<br>uninvoiced for next time]:::assumed
+
+    V --> Y[Running total updates]
+    X --> Y
+
+    Y --> Z[Configure tax / discount<br>if not inherited from source]:::assumed
+    Z --> AA[Live preview]:::track
+    AA --> BB[Configure payment +<br>delivery — same as Journey 1]:::track
+    BB --> CC[Success screen]:::track
+
+    classDef assumed fill:#fff3cd,stroke:#ffc107
+    classDef track fill:#d4edda,stroke:#28a745
+                </pre>
+            </div>
+            <h3 class="section-heading">Source Selection</h3>
+<ul>
+<li><code>invoice_from_source_started</code> — merchant chose &quot;from existing context&quot; option</li>
+<li><code>source_picker_opened</code> — source type selection modal shown</li>
+<li><code>source_type_selected</code> (source_type: job|contract|blank) — merchant chose source type</li>
+<li><code>invoice_from_job_started</code> — merchant selected job/project source</li>
+<li><code>invoice_from_contract_started</code> — merchant selected contract source</li>
+<li><code>invoice_from_blank_started</code> — merchant chose blank (redirect to Journey 1)</li>
+</ul>
+            <h3 class="section-heading">Job/Contract Selection</h3>
+<ul>
+<li><code>job_list_opened</code> — completed jobs list displayed</li>
+<li><code>job_selected</code> (job_id, client_name, job_status, uninvoiced_amount) — merchant selected a job</li>
+<li><code>contract_list_opened</code> — active contracts list displayed</li>
+<li><code>contract_selected</code> (contract_id, client_name, billing_period, contract_rate) — merchant selected a contract</li>
+<li><code>contract_billing_period_picker_opened</code> — period selector displayed</li>
+<li><code>contract_period_selected</code> (period_start_date, period_end_date, period_type: weekly|monthly|quarterly) — merchant chose period to invoice</li>
+</ul>
+            <h3 class="section-heading">Auto-Population</h3>
+<ul>
+<li><code>auto_populate_started</code> (source_type, source_id) — pre-fill process initiated</li>
+<li><code>auto_populate_completed</code> (client_populated: boolean, items_count, subtotal, tax_total) — pre-fill finished</li>
+<li><code>auto_populate_failed</code> (error_type, source_id) — pre-fill failed (data missing, service error)</li>
+<li><code>client_auto_populated</code> (client_id, client_name) — client auto-filled</li>
+<li><code>line_items_auto_populated</code> (items_count, total_amount) — line items pulled from source</li>
+<li><code>tax_inherited_from_source</code> (tax_rate, tax_total) — tax carried over from source</li>
+<li><code>discount_inherited_from_source</code> (discount_type, discount_amount) — discount carried over</li>
+</ul>
+            <h3 class="section-heading">Review &amp; Adjustment</h3>
+<ul>
+<li><code>source_data_reviewed</code> (items_count, changes_made: boolean) — merchant reviewed auto-populated data</li>
+<li><code>pre_filled_item_kept</code> (position, item_id, item_description) — merchant accepted pre-filled item</li>
+<li><code>pre_filled_item_modified</code> (position, item_id, field_changed: description|qty|rate, previous_value, new_value) — merchant edited pre-filled item</li>
+<li><code>pre_filled_item_deleted</code> (position, item_id, item_description) — merchant removed pre-filled item</li>
+<li><code>pre_filled_item_duplicated</code> (position, item_id) — merchant duplicated pre-filled item</li>
+<li><code>manual_item_added_to_source_items</code> (position, description) — merchant added new item alongside pre-filled items</li>
+<li><code>pre_filled_client_kept</code> — merchant accepted auto-populated client</li>
+<li><code>pre_filled_client_modified</code> (field: name|email|address, previous_value, new_value) — merchant edited auto-populated client details</li>
+</ul>
+            <h3 class="section-heading">Partial Invoicing</h3>
+<ul>
+<li><code>partial_invoice_mode_enabled</code> — merchant chose to bill subset of items</li>
+<li><code>partial_invoice_items_selected</code> (items_selected_count, items_total_count, selected_subtotal, full_subtotal) — merchant selected items to invoice</li>
+<li><code>uninvoiced_balance_calculated</code> (uninvoiced_amount, uninvoiced_items_count) — remaining balance calculated for next invoice</li>
+<li><code>partial_invoice_created</code> (invoice_total, uninvoiced_balance) — partial invoice confirmed and proceeding</li>
+</ul>
+            <h3 class="section-heading">Source Linking</h3>
+<ul>
+<li><code>invoice_linked_to_source</code> (source_type, source_id) — invoice marked as linked to job/contract (for future reference)</li>
+<li><code>source_marked_partially_invoiced</code> (source_id, remaining_uninvoiced_amount) — source updated with uninvoiced balance</li>
+</ul>
+            <h3 class="section-heading">Continuation to Delivery</h3>
+<ul>
+<li><code>source_invoice_preview_opened</code> — merchant opened preview</li>
+<li><code>source_invoice_payment_config_opened</code> — merchant configured payment</li>
+<li><code>source_invoice_delivery_selected</code> (delivery_channel) — merchant chose delivery channel</li>
+<li><code>source_invoice_sent</code> (source_type, source_id, partial_invoice: boolean) — invoice sent (tagged with source)</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="journey-card" id="journey-3">
+            <div class="journey-header">
+                <div class="journey-number">3</div>
+                <div class="journey-title-block">
+                    <h2>AI-Powered Invoice Creation</h2>
+                    <p class="journey-description">The merchant uploads an existing document — a PDF, photo, or screenshot — and AI extracts the invoice details. The merchant reviews, corrects, and sends. This flow (inspired by Wise) replaces manual data entry with verification, but requires trust-building through transparency about what the AI extracted vs. what it guessed. The &quot;Upload (AI extract)&quot; entry point is surfaced as a prominent yellow-tinted button with an &quot;AI&quot; badge inside the line-items section of the editor, making it discoverable mid-flow, not just at the very start.</p>
+                </div>
+            </div>
+            <div class="mermaid-container">
+                <pre class="mermaid">
+graph TD
+    A[Merchant taps 'New Invoice'] --> B{Creation method}
+    B -->|Manual| C[→ Journey 1]
+    B -->|From job/contract| D[→ Journey 2]
+    B -->|Upload document| E[Upload screen]
+
+    E --> F{File type}
+    F -->|PDF| G[Upload PDF]
+    F -->|Image / photo| H[Upload or take photo]:::track
+    F -->|Screenshot| I[Paste or upload screenshot]
+
+    G --> J[AI extraction service<br>processes document]:::track
+    H --> J
+    I --> J
+
+    J --> K{Extraction quality}
+    K -->|High confidence<br>all fields extracted| L[Pre-fill editor with<br>all extracted data]:::track
+    K -->|Partial extraction<br>some fields uncertain| M[Pre-fill known fields,<br>highlight uncertain ones]:::assumed
+    K -->|Extraction failed| N[Show error:<br>'Could not read this document']:::assumed
+
+    L --> O[Show AI disclaimer:<br>'Extracted by AI — please review']:::track
+    M --> O
+
+    N --> P{Retry options}:::assumed
+    P -->|Try different file| E
+    P -->|Enter manually| C
+    P -->|Cancel| Q[Return to dashboard]
+
+    O --> R{Merchant reviews<br>extracted data}
+    R --> S{Client correct?}
+    R --> T{Items correct?}
+    R --> U{Amounts correct?}
+    S --> W{Field correct?}
+    T --> W
+    U --> W
+    W -->|Yes| X[Keep as-is]
+    W -->|No / uncertain| Y[Edit inline]:::track
+
+    X --> Z{All fields reviewed?}
+    Y --> Z
+    Z -->|No| R
+    Z -->|Yes| AA[Merchant confirms<br>extracted invoice]:::track
+
+    AA --> BB[Editor loads with<br>confirmed data —<br>same as Journey 1 Step 5+]
+    BB --> CC[Preview → Payment →<br>Delivery → Success]:::track
+
+    classDef assumed fill:#fff3cd,stroke:#ffc107
+    classDef track fill:#d4edda,stroke:#28a745
+                </pre>
+            </div>
+            <h3 class="section-heading">Screen Views</h3>
+<ul>
+<li><code>ai_upload_screen_viewed</code> — upload screen displayed</li>
+<li><code>ai_processing_screen_viewed</code> — animated &quot;Extracting invoice details...&quot; shown</li>
+<li><code>ai_review_screen_viewed</code> — extracted data review screen displayed</li>
+<li><code>ai_disclaimer_shown</code> (confidence_level) — AI transparency banner displayed</li>
+</ul>
+            <h3 class="section-heading">Upload Initiation</h3>
+<ul>
+<li><code>ai_upload_started</code> — merchant tapped &quot;Upload document&quot; button</li>
+<li><code>ai_upload_file_picker_opened</code> — file chooser dialog shown</li>
+<li><code>ai_upload_camera_option_shown</code> — &quot;Take a photo&quot; option displayed</li>
+<li><code>ai_upload_camera_clicked</code> — merchant tapped camera button</li>
+<li><code>ai_upload_paste_option_clicked</code> — merchant pasted screenshot (keyboard)</li>
+</ul>
+            <h3 class="section-heading">File Upload</h3>
+<ul>
+<li><code>ai_file_selected</code> (file_type: pdf|image|screenshot, file_size_bytes, file_format) — file chosen</li>
+<li><code>ai_file_upload_started</code> (file_type, file_size_bytes) — upload began</li>
+<li><code>ai_file_upload_progress</code> (bytes_uploaded, total_bytes, percent_complete) — upload in progress (fire every 500ms)</li>
+<li><code>ai_file_upload_completed</code> (file_type, file_size_bytes, upload_duration_ms) — upload finished</li>
+<li><code>ai_file_upload_failed</code> (error_type: network|size_exceeded|unsupported_format|timeout, file_type) — upload failed</li>
+<li><code>ai_file_validation_error</code> (validation_error: file_type_unsupported|size_exceeds_limit|corrupted) — client-side validation failed</li>
+<li><code>ai_file_upload_retry_clicked</code> — merchant tapped &quot;Try another file&quot;</li>
+</ul>
+            <h3 class="section-heading">AI Extraction</h3>
+<ul>
+<li><code>ai_extraction_initiated</code> (file_type, file_size_bytes) — processing started</li>
+<li><code>ai_extraction_in_progress</code> (elapsed_time_ms) — extraction ongoing (fire at 2s, 5s, 10s markers for long processing)</li>
+<li><code>ai_extraction_completed</code> (confidence_level: high|partial|failed, fields_extracted_count, processing_time_ms) — extraction finished</li>
+<li><code>ai_extraction_failed</code> (error_type: unsupported_format|low_quality|service_error|timeout, processing_time_ms) — extraction failed</li>
+<li><code>ai_confidence_tier_assigned</code> (confidence_level, high_confidence_fields, partial_confidence_fields, failed_fields) — confidence breakdown calculated</li>
+</ul>
+            <h3 class="section-heading">Data Review &amp; Field Interactions</h3>
+<ul>
+<li><code>ai_review_started</code> (confidence_level, total_fields) — merchant began reviewing extracted data</li>
+<li><code>ai_field_section_viewed</code> (section: client|items|amounts|dates) — merchant scrolled to a section</li>
+<li><code>ai_field_focused</code> (field_name, confidence: high|partial|failed, extracted_value) — merchant tapped on a field</li>
+<li><code>ai_field_confidence_badge_clicked</code> (field_name, confidence_level) — merchant clicked confidence indicator</li>
+<li><code>ai_field_accepted</code> (field_name, confidence: high|partial|failed) — merchant confirmed field is correct (no edit)</li>
+<li><code>ai_field_edited</code> (field_name, confidence_was, extracted_value, new_value) — merchant corrected field</li>
+<li><code>ai_field_validation_error</code> (field_name, error_type) — field validation failed after edit</li>
+<li><code>ai_field_validation_passed</code> (field_name) — field passed validation after correction</li>
+<li><code>ai_field_blur</code> (field_name, final_value) — merchant left field</li>
+<li><code>ai_client_section_complete</code> (client_name, client_email, confidence_level) — all client fields reviewed</li>
+<li><code>ai_items_section_complete</code> (items_count, total_amount) — all item fields reviewed</li>
+<li><code>ai_amounts_section_complete</code> (subtotal, tax, discount, total) — all amount fields reviewed</li>
+<li><code>ai_dates_section_complete</code> (invoice_date, due_date) — all date fields reviewed</li>
+</ul>
+            <h3 class="section-heading">Confidence Metrics</h3>
+<ul>
+<li><code>ai_high_confidence_fields_count</code> — number of high-confidence extractions</li>
+<li><code>ai_partial_confidence_fields_count</code> — number of fields needing review</li>
+<li><code>ai_failed_fields_count</code> — number of unextracted fields</li>
+<li><code>ai_field_correction_rate</code> (field_name, correction_needed: boolean) — per-field correction necessity</li>
+</ul>
+            <h3 class="section-heading">Extraction Failure Path</h3>
+<ul>
+<li><code>ai_extraction_failed_modal_shown</code> (error_message) — failure screen displayed</li>
+<li><code>ai_extraction_retry_clicked</code> — merchant tapped &quot;Try another file&quot;</li>
+<li><code>ai_extraction_manual_fallback_clicked</code> — merchant tapped &quot;Enter manually&quot;</li>
+<li><code>ai_extraction_cancelled</code> — merchant cancelled and returned to dashboard</li>
+</ul>
+            <h3 class="section-heading">Confirmation</h3>
+<ul>
+<li><code>ai_review_completed</code> (fields_corrected_count, fields_accepted_count, review_duration_ms) — merchant finished reviewing</li>
+<li><code>ai_extraction_confirmed</code> (confidence_level, fields_corrected_count) — merchant approved and proceeding to editor</li>
+<li><code>ai_extraction_abandoned</code> (fields_reviewed_count, review_duration_ms, reason: timeout|nav_away|explicit) — merchant dropped off during review</li>
+</ul>
+            <h3 class="section-heading">Continuation to Invoice Creation</h3>
+<ul>
+<li><code>ai_extracted_invoice_editor_opened</code> (fields_extracted: list, source: ai_upload) — editor loaded with extracted data</li>
+<li><code>ai_extracted_editor_preview_opened</code> — merchant opened preview on AI-extracted invoice</li>
+<li><code>ai_extracted_payment_config_opened</code> — merchant configured payment</li>
+<li><code>ai_extracted_delivery_selected</code> (delivery_channel) — merchant chose delivery</li>
+<li><code>ai_extracted_invoice_sent</code> (confidence_level, corrections_made: boolean, delivery_channel) — invoice sent (tagged with AI source)</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="journey-card" id="journey-4">
+            <div class="journey-header">
+                <div class="journey-number">4</div>
+                <div class="journey-title-block">
+                    <h2>Repeat Invoicing for Returning Customer</h2>
+                    <p class="journey-description">A merchant invoices the same client regularly. The flow leverages auto-complete, saved items, and optionally previous invoice templates to minimize repetitive data entry. This is a variation of Journey 1 where most friction is removed by memory and defaults.</p>
+                </div>
+            </div>
+            <div class="mermaid-container">
+                <pre class="mermaid">
+graph TD
+    A[Merchant taps 'New Invoice'] --> B[Editor loads with<br>smart defaults]
+    B --> C[Start typing client<br>name or email]
+    C --> D[Auto-complete suggests<br>matching contacts]:::track
+    D --> E[Select returning client]
+
+    E --> F[Auto-fill: billing address,<br>currency, language,<br>preferred payment method]:::track
+
+    F --> G{Use previous invoice<br>as template?}:::assumed
+    G -->|Yes| H[Load line items from<br>most recent invoice<br>for this client]:::track
+    G -->|No| I[Start with blank<br>line items]
+
+    H --> J{Review pre-loaded items}
+    J -->|Adjust amounts / dates| K[Edit line items]
+    J -->|All correct| L[Keep as-is]
+    K --> L
+
+    I --> M[Add line items<br>— manual or catalogue]
+    M --> L
+
+    L --> N[Running total updates]
+    N --> O{Tax / discount<br>inherited from template?}:::assumed
+    O -->|Yes| P[Review inherited rates]
+    O -->|No| Q[Configure inline]
+    P --> R[Preview + Payment +<br>Delivery — same as Journey 1]
+    Q --> R
+    R --> S[Success screen]:::track
+
+    classDef assumed fill:#fff3cd,stroke:#ffc107
+    classDef track fill:#d4edda,stroke:#28a745
+                </pre>
+            </div>
+            <h3 class="section-heading">Client Auto-Complete</h3>
+<ul>
+<li><code>client_autocomplete_field_focused</code> — merchant clicked on client field</li>
+<li><code>client_autocomplete_search_started</code> (search_term) — merchant began typing</li>
+<li><code>client_autocomplete_results_shown</code> (result_count, has_recent: boolean) — suggestions displayed</li>
+<li><code>client_autocomplete_result_hovered</code> (client_id, client_name) — merchant hovered over suggestion (desktop)</li>
+<li><code>client_autocomplete_selected</code> (client_id, client_name, matched_by: name|email, is_returning_customer: boolean) — merchant selected a client</li>
+<li><code>client_autocomplete_search_abandoned</code> — merchant cleared search without selecting</li>
+</ul>
+            <h3 class="section-heading">Client Autofill</h3>
+<ul>
+<li><code>client_autofill_initiated</code> (client_id, client_name) — auto-fill process started</li>
+<li><code>client_autofill_completed</code> (client_name, client_email, billing_address, currency, language, preferred_payment_method) — client details pre-populated</li>
+<li><code>client_autofill_failed</code> (error_type) — auto-fill failed (data missing, service error)</li>
+<li><code>client_autofill_partially_completed</code> (fields_filled: list, fields_missing: list) — some fields missing</li>
+</ul>
+            <h3 class="section-heading">Template Suggestion</h3>
+<ul>
+<li><code>template_suggestion_shown</code> (template_id, template_age_days, previous_invoice_number, previous_total) — template prompt appeared</li>
+<li><code>template_suggestion_accepted</code> — merchant tapped &quot;Use as template&quot;</li>
+<li><code>template_suggestion_declined</code> — merchant tapped &quot;Start fresh&quot;</li>
+<li><code>template_suggestion_dismissed</code> — merchant closed prompt without choosing</li>
+</ul>
+            <h3 class="section-heading">Template Loading</h3>
+<ul>
+<li><code>template_load_initiated</code> (template_id, template_age_days) — template fetch started</li>
+<li><code>template_load_completed</code> (items_count, subtotal, tax_total, discount_total) — template loaded</li>
+<li><code>template_load_failed</code> (error_type) — template loading failed</li>
+</ul>
+            <h3 class="section-heading">Template Review &amp; Modification</h3>
+<ul>
+<li><code>template_items_viewed</code> (items_count) — merchant reviewed template items</li>
+<li><code>template_item_kept</code> (position, item_id) — merchant accepted template item</li>
+<li><code>template_item_modified</code> (position, item_id, field_changed: description|qty|rate|tax|discount) — merchant edited template item</li>
+<li><code>template_item_deleted</code> (position, item_id) — merchant removed template item</li>
+<li><code>template_item_added</code> (position, source: manual|catalogue) — merchant added new item to template</li>
+<li><code>template_total_recalculated</code> (old_total, new_total, reason: item_change|qty_change|rate_change|tax_change|discount_change) — total updated</li>
+<li><code>template_inherited_tax_reviewed</code> (tax_rate, applies_to_all: boolean) — merchant reviewed inherited tax</li>
+<li><code>template_inherited_discount_reviewed</code> (discount_type, discount_amount) — merchant reviewed inherited discount</li>
+</ul>
+            <h3 class="section-heading">Repeat Customer Signals</h3>
+<ul>
+<li><code>repeat_customer_detected</code> (client_id, client_name, previous_invoice_count, previous_total_amount) — system identified returning customer</li>
+<li><code>repeat_customer_metric_displayed</code> (previous_invoice_count, total_invoiced_amount) — merchant shown customer history</li>
+<li><code>template_suggestion_confidence</code> (confidence_score) — system&#x27;s confidence that template is relevant (0-100)</li>
+</ul>
+            <h3 class="section-heading">Continuation to Delivery</h3>
+<ul>
+<li><code>repeat_customer_invoice_preview_opened</code> — merchant opened preview</li>
+<li><code>repeat_customer_payment_config_opened</code> — merchant configured payment</li>
+<li><code>repeat_customer_delivery_selected</code> (delivery_channel) — merchant chose delivery</li>
+<li><code>repeat_customer_invoice_sent</code> (template_used: boolean, items_modified: boolean, delivery_channel) — invoice sent</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="journey-card" id="journey-5">
+            <div class="journey-header">
+                <div class="journey-number">5</div>
+                <div class="journey-title-block">
+                    <h2>Draft Management</h2>
+                    <p class="journey-description">A merchant starts an invoice but isn&#x27;t ready to send. They save it as a draft and return later to finish and send. This journey covers the save, resume, and edit cycle.</p>
+                </div>
+            </div>
+            <div class="mermaid-container">
+                <pre class="mermaid">
+graph TD
+    A{Entry point} --> B[Mid-edit: merchant<br>navigates away]
+    A --> C[Merchant taps<br>'Save as Draft']
+    A --> D[Auto-save triggers<br>in background]:::assumed
+
+    B --> E{Unsaved changes?}:::assumed
+    E -->|Yes| F[Prompt: save draft<br>or discard?]:::assumed
+    E -->|No| G[Exit editor cleanly]
+    F -->|Save| H[Invoice saved to drafts]:::track
+    F -->|Discard| I[Changes lost,<br>return to dashboard]:::assumed
+
+    C --> H
+    D --> H
+
+    H --> J[Draft badge visible<br>with timestamp]:::track
+
+    K[Later: merchant opens<br>invoice dashboard] --> L[Drafts section visible<br>with count badge]:::track
+    L --> M[Select a draft]
+    M --> N[Editor loads with<br>all saved data intact]:::track
+
+    N --> O{Resume editing}
+    O --> P[Add / edit line items]
+    O --> Q[Update client details]
+    O --> R[Change payment config]
+
+    P --> S{Ready to send?}
+    Q --> S
+    R --> S
+    S -->|Yes| T[Confirmation modal +<br>delivery — same as Journey 1]:::track
+    S -->|Not yet| U[Save draft again]
+    U --> H
+
+    S -->|Delete draft| V{Confirm delete?}:::assumed
+    V -->|Yes| W[Draft permanently deleted]:::track
+    V -->|No| N
+
+    classDef assumed fill:#fff3cd,stroke:#ffc107
+    classDef track fill:#d4edda,stroke:#28a745
+                </pre>
+            </div>
+            <h3 class="section-heading">Auto-Save</h3>
+<ul>
+<li><code>auto_save_enabled</code> — auto-save feature active on this draft</li>
+<li><code>auto_save_interval_started</code> (interval_ms) — auto-save timer started (e.g. every 10 seconds)</li>
+<li><code>auto_save_triggered</code> (time_since_last_save_ms, change_type: field|item|amount) — auto-save fired</li>
+<li><code>auto_save_in_progress</code> — save request sent to server</li>
+<li><code>auto_save_completed</code> (save_duration_ms, invoice_id, data_size_bytes) — auto-save succeeded</li>
+<li><code>auto_save_failed</code> (error_type: network|auth_timeout|server_error, save_duration_ms) — auto-save failed</li>
+<li><code>auto_save_retry_scheduled</code> (retry_delay_ms) — retrying after failure</li>
+<li><code>draft_status_updated</code> (status: saved|unsaved|saving|failed) — status indicator updated</li>
+</ul>
+            <h3 class="section-heading">Unsaved Changes Detection</h3>
+<ul>
+<li><code>unsaved_changes_detected</code> (change_type: field|item, field_name) — change registered</li>
+<li><code>unsaved_changes_count_incremented</code> (unsaved_change_count) — tracking number of changes since last save</li>
+<li><code>unsaved_changes_warned</code> (unsaved_change_count) — user warned before navigation (if no auto-save)</li>
+</ul>
+            <h3 class="section-heading">Manual Draft Save</h3>
+<ul>
+<li><code>save_draft_button_clicked</code> — merchant tapped &quot;Save draft&quot; button</li>
+<li><code>draft_save_initiated</code> (trigger: manual_button|nav_away|app_close) — save started</li>
+<li><code>draft_save_in_progress</code> — save request sent</li>
+<li><code>draft_save_completed</code> (invoice_id, save_duration_ms, invoice_status: draft) — save succeeded</li>
+<li><code>draft_save_failed</code> (error_type, error_message) — save failed</li>
+<li><code>draft_save_retry_clicked</code> — merchant tapped retry after failure</li>
+</ul>
+            <h3 class="section-heading">Navigation Away with Unsaved Changes</h3>
+<ul>
+<li><code>editor_nav_away_with_changes</code> (unsaved_change_count, time_in_editor_ms) — merchant tried to leave with changes</li>
+<li><code>unsaved_changes_confirmation_shown</code> (unsaved_change_count) — &quot;Save or discard?&quot; modal appeared</li>
+<li><code>unsaved_changes_save_clicked</code> — merchant chose &quot;Save draft&quot;</li>
+<li><code>unsaved_changes_discard_clicked</code> — merchant chose &quot;Discard changes&quot;</li>
+<li><code>unsaved_changes_cancel_clicked</code> — merchant cancelled navigation</li>
+</ul>
+            <h3 class="section-heading">Draft List &amp; Discovery</h3>
+<ul>
+<li><code>drafts_section_viewed</code> (draft_count) — drafts section displayed in dashboard</li>
+<li><code>drafts_filter_clicked</code> — merchant filtered invoice list to drafts only</li>
+<li><code>drafts_count_badge_shown</code> (draft_count) — count badge displayed</li>
+<li><code>draft_row_clicked</code> (draft_id, age_days) — merchant selected a draft from list</li>
+<li><code>draft_preview_hovered</code> (draft_id) — merchant hovered over draft row (shows preview tooltip)</li>
+</ul>
+            <h3 class="section-heading">Resuming a Draft</h3>
+<ul>
+<li><code>draft_load_initiated</code> (draft_id, age_days) — draft load started</li>
+<li><code>draft_load_completed</code> (draft_id, load_duration_ms, data_size_bytes) — draft loaded into editor</li>
+<li><code>draft_load_failed</code> (error_type) — draft load failed (data corrupted, not found, auth error)</li>
+<li><code>draft_editor_opened</code> (draft_id, age_days, last_edited_time_ago_minutes) — editor opened with draft data</li>
+<li><code>draft_conflict_detected</code> — draft data conflicts with server version (e.g. another device edited it)</li>
+<li><code>draft_conflict_resolution_modal_shown</code> — conflict resolution UI appeared</li>
+<li><code>draft_version_selected</code> (version: local|server) — merchant chose which version to keep</li>
+</ul>
+            <h3 class="section-heading">Editing Resumed Draft</h3>
+<ul>
+<li><code>draft_edit_resumed</code> (draft_id) — merchant made first change to resumed draft</li>
+<li><code>draft_field_changed</code> (field_name, previous_value, new_value) — merchant edited a field</li>
+<li><code>draft_items_modified</code> (items_added: count, items_deleted: count, items_edited: count) — items changed</li>
+<li><code>draft_total_changed</code> (previous_total, new_total) — total updated while editing</li>
+</ul>
+            <h3 class="section-heading">Draft Operations</h3>
+<ul>
+<li><code>draft_send_initiated</code> (draft_id, age_days) — merchant tapped &quot;Send&quot; on a draft</li>
+<li><code>draft_sent</code> (draft_id, age_days, delivery_channel) — draft finalized and sent (conversion event)</li>
+<li><code>draft_delete_clicked</code> (draft_id) — merchant tapped &quot;Delete draft&quot;</li>
+<li><code>draft_delete_confirmation_shown</code> (draft_id) — &quot;Confirm delete?&quot; modal appeared</li>
+<li><code>draft_delete_confirmed</code> (draft_id, age_days) — merchant confirmed deletion</li>
+<li><code>draft_delete_cancelled</code> — merchant cancelled deletion</li>
+<li><code>draft_permanently_deleted</code> (draft_id) — draft removed from system</li>
+<li><code>draft_duplicate_clicked</code> (draft_id) — merchant tapped &quot;Duplicate draft&quot;</li>
+<li><code>draft_duplicated</code> (original_draft_id, new_draft_id) — draft copied</li>
+</ul>
+            <h3 class="section-heading">Draft Expiration &amp; Cleanup</h3>
+<ul>
+<li><code>draft_expiration_warning_shown</code> (draft_id, days_until_expiry) — merchant warned that draft will expire soon</li>
+<li><code>draft_expired</code> (draft_id, age_days) — draft auto-deleted due to age (if applicable)</li>
+<li><code>draft_archived</code> (draft_id, age_days) — draft moved to archive (if applicable)</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="journey-card" id="journey-6">
+            <div class="journey-header">
+                <div class="journey-number">6</div>
+                <div class="journey-title-block">
+                    <h2>Multi-Channel Delivery</h2>
+                    <p class="journey-description">After an invoice is finalized, the merchant chooses how to deliver it. This journey focuses on the delivery decision and the channel-specific flows — it&#x27;s the tail end of every other journey.</p>
+                </div>
+            </div>
+            <div class="mermaid-container">
+                <pre class="mermaid">
+graph TD
+    A[Invoice finalized —<br>confirmation modal] --> B{Select delivery channel}
+
+    B -->|Email| C[Pre-fill recipient email<br>from client record]
+    C --> D{Customize email?}
+    D -->|Yes| E[Edit subject line +<br>message body]:::assumed
+    D -->|No| F[Use default template<br>with dynamic subject]
+    E --> G[Send email with<br>invoice attached + payment link]:::track
+    F --> G
+
+    B -->|WhatsApp — 'Popular'| WA1[Pre-fill phone number<br>from client record]:::track
+    WA1 --> WA2{Number on file?}
+    WA2 -->|Yes| WA3[Preview WhatsApp message<br>with invoice # + amount +<br>payment link]:::track
+    WA2 -->|No| WA4[Enter WhatsApp number]
+    WA4 --> WA3
+    WA3 --> WA5[Send via WhatsApp Business API]:::track
+
+    B -->|Shareable link| H[Generate unique<br>payment link URL]:::track
+    H --> I[Copy to clipboard +<br>show QR code option]:::assumed
+    I --> J{Share via}:::assumed
+    J -->|Copy link| K[Merchant pastes<br>link manually]
+    J -->|QR code| L[Display QR code<br>for in-person use]:::track
+
+    B -->|SMS| M[Pre-fill phone number<br>from client record]:::assumed
+    M --> N{Number on file?}:::assumed
+    N -->|Yes| O[Send SMS with<br>payment link]:::track
+    N -->|No| P[Enter phone number]
+    P --> O
+
+    B -->|PDF download| Q[Generate PDF]:::track
+    Q --> R[Download to device]
+    R --> S[Merchant distributes<br>manually — print, attach, etc.]
+
+    B -->|Schedule send| T[Pick date and time]
+    T --> U{Delivery channel<br>for scheduled send}:::assumed
+    U -->|Email| V[Queue email<br>for scheduled time]:::track
+    U -->|WhatsApp| VW[Queue WhatsApp<br>for scheduled time]:::track
+    U -->|SMS| W[Queue SMS<br>for scheduled time]:::track
+
+    G --> X[Success screen]:::track
+    WA5 --> X
+    K --> X
+    L --> X
+    O --> X
+    R --> X
+    V --> X
+    VW --> X
+    W --> X
+
+    classDef assumed fill:#fff3cd,stroke:#ffc107
+    classDef track fill:#d4edda,stroke:#28a745
+                </pre>
+            </div>
+            <h3 class="section-heading">Delivery Channel Selection</h3>
+<ul>
+<li><code>delivery_modal_opened</code> (available_channels: list) — delivery option selection modal displayed</li>
+<li><code>delivery_channel_hovered</code> (channel) — merchant hovered over delivery option (desktop)</li>
+<li><code>delivery_channel_selected</code> (channel: email|sms|whatsapp|link|pdf|scheduled, channel_count_available) — merchant chose channel</li>
+<li><code>delivery_channel_unselected</code> (channel) — merchant deselected a channel (if multi-select available)</li>
+<li><code>delivery_channel_icon_clicked</code> (channel) — merchant clicked channel help/info icon</li>
+</ul>
+            <h3 class="section-heading">Email Delivery</h3>
+<ul>
+<li><code>email_delivery_selected</code> (recipient_email_on_file: boolean) — merchant chose email</li>
+<li><code>email_recipient_prefilled</code> (recipient_email) — email auto-populated from client record</li>
+<li><code>email_recipient_field_focused</code> — merchant clicked recipient field</li>
+<li><code>email_recipient_changed</code> (previous_email, new_email) — merchant edited recipient email</li>
+<li><code>email_recipient_validation_error</code> (error_type: invalid_format) — validation failed</li>
+<li><code>email_recipient_added</code> (recipient_email) — valid email entered</li>
+<li><code>email_template_preview_opened</code> — merchant opened template preview</li>
+<li><code>email_subject_focused</code> — merchant clicked subject line</li>
+<li><code>email_subject_changed</code> (new_subject) — merchant edited subject</li>
+<li><code>email_subject_restored_to_default</code> — merchant reset to default subject</li>
+<li><code>email_body_focused</code> — merchant clicked message body</li>
+<li><code>email_body_changed</code> (char_count) — merchant edited body (fire on blur, with length)</li>
+<li><code>email_body_restored_to_default</code> — merchant reset to default body</li>
+<li><code>email_customization_preview_updated</code> — preview re-rendered on customization</li>
+<li><code>email_sending_initiated</code> (recipient_email, customized: boolean) — send started</li>
+<li><code>email_sending_in_progress</code> (elapsed_time_ms) — sending (fire at 2s, 5s markers if slow)</li>
+<li><code>email_sent_successfully</code> (recipient_email, send_duration_ms) — email delivered</li>
+<li><code>email_send_failed</code> (error_type: invalid_recipient|service_error|auth_error, error_message) — send failed</li>
+<li><code>email_send_retry_clicked</code> — merchant tapped retry after failure</li>
+<li><code>email_attachment_included</code> (attachment_type: pdf|..) — attachment included with email</li>
+<li><code>email_delivery_receipt_requested</code> (receipt_type: read|delivery) — merchant enabled delivery receipt (if available)</li>
+</ul>
+            <h3 class="section-heading">SMS Delivery</h3>
+<ul>
+<li><code>sms_delivery_selected</code> (recipient_phone_on_file: boolean) — merchant chose SMS</li>
+<li><code>sms_recipient_prefilled</code> (recipient_phone) — phone auto-populated from client record</li>
+<li><code>sms_recipient_field_opened</code> — SMS recipient modal/field opened</li>
+<li><code>sms_recipient_changed</code> (previous_phone, new_phone) — merchant edited phone number</li>
+<li><code>sms_recipient_validation_error</code> (error_type: invalid_format|invalid_country) — validation failed</li>
+<li><code>sms_recipient_confirmed</code> (recipient_phone) — valid phone entered</li>
+<li><code>sms_preview_shown</code> (sms_preview_text, link_included: boolean) — SMS preview displayed</li>
+<li><code>sms_sending_initiated</code> (recipient_phone) — send started</li>
+<li><code>sms_sending_in_progress</code> — sending</li>
+<li><code>sms_sent_successfully</code> (recipient_phone, send_duration_ms) — SMS delivered</li>
+<li><code>sms_send_failed</code> (error_type: invalid_recipient|no_balance|service_error, error_message) — send failed</li>
+<li><code>sms_send_retry_clicked</code> — merchant tapped retry</li>
+</ul>
+            <h3 class="section-heading">WhatsApp Delivery</h3>
+<ul>
+<li><code>whatsapp_delivery_selected</code> (recipient_phone_on_file: boolean) — merchant chose WhatsApp</li>
+<li><code>whatsapp_recipient_prefilled</code> (recipient_phone) — phone auto-populated</li>
+<li><code>whatsapp_recipient_field_opened</code> — WhatsApp recipient modal/field opened</li>
+<li><code>whatsapp_recipient_changed</code> (previous_phone, new_phone) — merchant edited phone number</li>
+<li><code>whatsapp_recipient_validation_error</code> (error_type) — validation failed</li>
+<li><code>whatsapp_recipient_confirmed</code> (recipient_phone) — valid phone entered</li>
+<li><code>whatsapp_message_preview_shown</code> (message_preview_text, fields_included: list) — message preview displayed</li>
+<li><code>whatsapp_message_customized</code> (customization_type: text_edited) — merchant edited message (if editable)</li>
+<li><code>whatsapp_sending_initiated</code> (recipient_phone) — send started</li>
+<li><code>whatsapp_sending_in_progress</code> — sending</li>
+<li><code>whatsapp_sent_successfully</code> (recipient_phone, send_duration_ms) — WhatsApp message delivered</li>
+<li><code>whatsapp_send_failed</code> (error_type: not_on_whatsapp|phone_unverified|service_error) — send failed</li>
+<li><code>whatsapp_send_retry_clicked</code> — merchant tapped retry</li>
+<li><code>whatsapp_message_content</code> (invoice_number_included: boolean, amount_included: boolean, payment_link_included: boolean, due_date_included: boolean) — message content composition</li>
+</ul>
+            <h3 class="section-heading">Shareable Link / Payment Page</h3>
+<ul>
+<li><code>shareable_link_selected</code> — merchant chose &quot;Shareable link&quot; option</li>
+<li><code>shareable_link_generation_initiated</code> — link generation started</li>
+<li><code>shareable_link_generated</code> (link_url, link_id) — unique link created</li>
+<li><code>shareable_link_generation_failed</code> (error_type) — generation failed</li>
+<li><code>shareable_link_displayed</code> (link_url) — link shown to merchant</li>
+<li><code>shareable_link_copy_clicked</code> — merchant tapped &quot;Copy to clipboard&quot;</li>
+<li><code>shareable_link_copied</code> (link_url) — link copied to clipboard</li>
+<li><code>shareable_link_copy_failed</code> (error_type) — copy failed</li>
+<li><code>shareable_link_qr_code_requested</code> — merchant tapped &quot;Show QR code&quot;</li>
+<li><code>shareable_link_qr_code_generated</code> (qr_code_size, format) — QR code created</li>
+<li><code>shareable_link_qr_code_displayed</code> — QR code shown on screen</li>
+<li><code>shareable_link_qr_code_download_clicked</code> — merchant tapped &quot;Download QR code&quot;</li>
+<li><code>shareable_link_qr_code_downloaded</code> (format) — QR code image downloaded</li>
+<li><code>shareable_link_qr_code_print_clicked</code> — merchant tapped &quot;Print&quot;</li>
+<li><code>shareable_link_share_opened</code> — native share sheet opened (iOS/Android)</li>
+<li><code>shareable_link_share_method_used</code> (share_method: copy|whatsapp|email|sms|other) — merchant shared via OS method</li>
+</ul>
+            <h3 class="section-heading">PDF Download</h3>
+<ul>
+<li><code>pdf_download_initiated</code> (invoice_id, file_format: a4|letter, language) — PDF generation started</li>
+<li><code>pdf_download_in_progress</code> (elapsed_time_ms) — generating (fire at 2s, 5s markers if slow)</li>
+<li><code>pdf_generation_completed</code> (file_size_bytes, generation_time_ms) — PDF created</li>
+<li><code>pdf_generation_failed</code> (error_type: rendering_error|timeout|service_error) — generation failed</li>
+<li><code>pdf_download_started</code> (file_size_bytes, file_name) — download initiated</li>
+<li><code>pdf_download_progress</code> (bytes_downloaded, total_bytes, percent_complete) — download in progress</li>
+<li><code>pdf_download_completed</code> (file_size_bytes, download_duration_ms, destination: device_downloads) — download finished</li>
+<li><code>pdf_download_failed</code> (error_type: network_error|disk_full|permissions) — download failed</li>
+<li><code>pdf_print_clicked</code> — merchant tapped &quot;Print&quot; option</li>
+<li><code>pdf_printed</code> (pages_printed) — PDF sent to printer</li>
+</ul>
+            <h3 class="section-heading">Scheduled Send</h3>
+<ul>
+<li><code>scheduled_send_selected</code> — merchant chose &quot;Schedule send&quot;</li>
+<li><code>scheduled_send_datetime_picker_opened</code> — date/time picker modal appeared</li>
+<li><code>scheduled_send_date_selected</code> (scheduled_date, days_from_now) — merchant chose date</li>
+<li><code>scheduled_send_time_selected</code> (scheduled_time, timezone) — merchant chose time</li>
+<li><code>scheduled_send_datetime_confirmed</code> (scheduled_datetime, days_from_now) — date/time confirmed</li>
+<li><code>scheduled_send_channel_picker_opened</code> — channel selection appeared (for scheduled send)</li>
+<li><code>scheduled_send_channel_selected</code> (channel: email|sms|whatsapp|link) — merchant chose channel for scheduled delivery</li>
+<li><code>scheduled_send_queued</code> (scheduled_datetime, delivery_channel, invoice_id) — scheduled send queued successfully</li>
+<li><code>scheduled_send_queue_failed</code> (error_type) — queueing failed</li>
+<li><code>scheduled_send_preview_shown</code> (scheduled_datetime, delivery_channel) — preview displayed</li>
+<li><code>scheduled_send_edit_clicked</code> (scheduled_send_id) — merchant edited scheduled send before it fired</li>
+<li><code>scheduled_send_cancelled</code> (scheduled_send_id, time_until_scheduled_send_minutes) — merchant cancelled scheduled send</li>
+<li><code>scheduled_send_reminder_set</code> (remind_before_minutes) — merchant opted to be reminded before send</li>
+</ul>
+            <h3 class="section-heading">Multi-Channel Batch Send</h3>
+<ul>
+<li><code>multi_channel_send_initiated</code> (channels_selected: list) — merchant chose to send via multiple channels</li>
+<li><code>multi_channel_send_completed</code> (channels_sent: list, overall_duration_ms) — all sends finished</li>
+<li><code>multi_channel_send_partial_failure</code> (successful_channels: list, failed_channels: list) — some channels failed</li>
+</ul>
+            <h3 class="section-heading">Delivery Confirmation</h3>
+<ul>
+<li><code>delivery_confirmation_modal_opened</code> (channel, recipient_address) — pre-send confirmation displayed</li>
+<li><code>delivery_confirmation_reviewed</code> — merchant reviewed details</li>
+<li><code>delivery_confirmation_confirmed</code> — merchant approved final send</li>
+<li><code>delivery_confirmation_edited</code> — merchant tapped &quot;Edit&quot; to change settings</li>
+</ul>
+            <h3 class="section-heading">Post-Delivery</h3>
+<ul>
+<li><code>delivery_success_screen_shown</code> (channel, recipient_address) — success notification displayed</li>
+<li><code>delivery_success_action_clicked</code> (action: duplicate|reminder|recurring|dashboard) — merchant tapped post-send action</li>
+<li><code>delivery_tracking_enabled</code> (tracking_type: opens|clicks|payment) — merchant opted into delivery tracking</li>
+<li><code>delivery_notification_enabled</code> — merchant opted to receive notifications on recipient actions</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="journey-card" id="journey-7">
+            <div class="journey-header">
+                <div class="journey-number">7</div>
+                <div class="journey-title-block">
+                    <h2>Post-Send Automation — The Recurring + Autopilot Flywheel</h2>
+                    <p class="journey-description">After sending the first invoice, the system prompts the merchant to set up automations — payment reminders, recurring reissue, and autopilot collection. Crucially, recurring (reissue on schedule) and autopilot (auto-collect on due date) are presented as <strong>complementary primitives</strong> under a unified &quot;Set &amp; forget — reissue and auto-collect&quot; section. When both are enabled, the merchant has created a true subscription. When only recurring is on, the UI nudges them toward adding autopilot for the flywheel. And when the system detects the same customer being invoiced repeatedly, it surfaces a merchant-facing insight card inviting the customer to save a card on their next payment page — closing the flywheel from the recipient side.</p>
+                </div>
+            </div>
+            <div class="mermaid-container">
+                <pre class="mermaid">
+graph TD
+    A[Success screen after<br>invoice sent] --> B{Automation prompts}
+
+    B --> C[Set up payment reminders?]
+    B --> AUTO[Set & forget:<br>reissue + auto-collect]
+    B --> F[Done — return to dashboard]
+
+    C --> G{Reminder config}
+    G --> H[Before due date:<br>3 days, 1 day, day-of]
+    G --> I[After overdue:<br>1 day, 7 days, 14 days]
+    G --> HC[Channel: Email, SMS,<br>WhatsApp, or all channels]
+    H --> J[Save reminder schedule]:::track
+    I --> J
+    HC --> J
+
+    AUTO --> D[Toggle: Make recurring]
+    AUTO --> E[Toggle: Autopilot payments]
+
+    D --> K{Recurring config}
+    K --> L[Frequency: weekly,<br>monthly, quarterly, custom]
+    L --> M[End condition: never,<br>after N invoices, on date]
+    M --> N{Auto-send or<br>draft for review?}
+    N -->|Auto-send| O[Recurring invoice<br>sends automatically]:::track
+    N -->|Draft| P[Recurring draft created<br>for manual review each cycle]:::track
+
+    O --> STATE{Also enable<br>autopilot?}
+    P --> STATE
+    STATE -->|Not yet| NUDGE[Inline nudge:<br>'Turn this into a true subscription —<br>pair with Autopilot below']:::track
+    STATE -->|Yes| E
+
+    E --> Q{Autopilot config}
+    Q --> R[Select payment method<br>on file: card, DD, VRP]
+    R --> S{Charge timing}
+    S -->|On due date| U[Charge on exact due date]
+    S -->|Smart — skip weekends| T[Charge on Friday<br>if due date is weekend]
+    T --> FH[Failure handling:<br>retry in 3 days, notify, or both]
+    U --> FH
+    FH --> V[Save autopilot config]:::track
+
+    V --> FLYWHEEL{Both recurring<br>AND autopilot on?}
+    NUDGE --> W
+    FLYWHEEL -->|Yes| SUBSCRIPTION[🎉 Subscription banner:<br>'You've turned this into a subscription —<br>Teya will issue AND auto-charge']:::track
+    FLYWHEEL -->|No| W
+    SUBSCRIPTION --> W
+
+    J --> W{Set up more automations?}
+    W -->|Yes| B
+    W -->|No| X[Return to invoice dashboard<br>with automation badges visible]:::track
+
+    F --> X
+
+    classDef assumed fill:#fff3cd,stroke:#ffc107
+    classDef track fill:#d4edda,stroke:#28a745
+                </pre>
+            </div>
+            <h3 class="section-heading">Payment Reminders</h3>
+<ul>
+<li><code>post_send_prompts_shown</code> (prompt_type: reminders|recurring|autopilot) — automation prompts displayed</li>
+<li><code>reminder_section_viewed</code> — reminders card visible</li>
+<li><code>reminder_toggle_clicked</code> — merchant tapped &quot;Enable reminders&quot; toggle</li>
+<li><code>reminder_config_opened</code> (reminder_toggle_state: on|off) — reminder config panel opened</li>
+<li><code>reminder_schedule_option_selected</code> (timing_type: before_due|after_overdue) — merchant chose timing strategy</li>
+<li><code>reminder_before_due_selected</code> (days_before: 3|1|0) — merchant chose pre-due reminder timing</li>
+<li><code>reminder_before_due_customized</code> (custom_days: number) — merchant set custom days-before value</li>
+<li><code>reminder_after_overdue_selected</code> (days_after: 1|7|14) — merchant chose post-due reminder timing</li>
+<li><code>reminder_after_overdue_customized</code> (custom_days: number) — merchant set custom days-after value</li>
+<li><code>reminder_channel_selected</code> (channels: email|sms|whatsapp|combination) — merchant chose notification channel(s)</li>
+<li><code>reminder_channel_toggled</code> (channel, new_state: on|off) — merchant enabled/disabled specific channel</li>
+<li><code>reminder_schedule_preview_shown</code> (reminder_timeline: list) — timeline of reminders displayed (e.g. &quot;3 days before, 1 day before, 7 days after overdue&quot;)</li>
+<li><code>reminder_config_saved</code> (reminder_schedule: list, channels: list, invoice_id) — reminders configured and saved</li>
+<li><code>reminder_config_abandoned</code> — merchant closed config without saving</li>
+</ul>
+            <h3 class="section-heading">Recurring Invoicing</h3>
+<ul>
+<li><code>recurring_section_viewed</code> — recurring card visible</li>
+<li><code>recurring_toggle_clicked</code> (current_state: off) — merchant tapped &quot;Enable recurring&quot; toggle</li>
+<li><code>recurring_config_opened</code> (recurring_toggle_state: on|off) — recurring config panel opened</li>
+<li><code>recurring_frequency_selected</code> (frequency: weekly|biweekly|monthly|quarterly|custom) — merchant chose reissue frequency</li>
+<li><code>recurring_frequency_custom_entered</code> (custom_frequency_days: number) — merchant entered custom frequency</li>
+<li><code>recurring_frequency_preview_shown</code> (next_issue_date, subsequent_dates: list) — timeline of future invoices shown</li>
+<li><code>recurring_end_condition_selected</code> (condition_type: never|after_count|on_date) — merchant chose end condition</li>
+<li><code>recurring_end_count_entered</code> (invoice_count: number) — merchant set &quot;after N invoices&quot; threshold</li>
+<li><code>recurring_end_date_selected</code> (end_date, recurrences_until_date: number) — merchant chose end date</li>
+<li><code>recurring_send_mode_selected</code> (mode: auto_send|draft_for_review) — merchant chose auto-send vs. draft</li>
+<li><code>recurring_preview_shown</code> (schedule: list) — full recurring schedule displayed</li>
+<li><code>recurring_config_saved</code> (frequency, end_condition, send_mode, invoice_id) — recurring configured and saved</li>
+<li><code>recurring_nudge_shown</code> (message_type: &quot;pair with autopilot&quot;) — nudge to add autopilot displayed</li>
+<li><code>recurring_nudge_dismissed</code> — merchant closed nudge without acting</li>
+<li><code>recurring_nudge_converted</code> — merchant clicked &quot;Enable autopilot&quot; from nudge</li>
+<li><code>recurring_config_abandoned</code> — merchant closed config without saving</li>
+</ul>
+            <h3 class="section-heading">Autopilot Collection</h3>
+<ul>
+<li><code>autopilot_section_viewed</code> — autopilot card visible</li>
+<li><code>autopilot_info_tooltip_clicked</code> — merchant clicked help/info icon for autopilot</li>
+<li><code>autopilot_toggle_clicked</code> (current_state: off) — merchant tapped &quot;Enable autopilot&quot; toggle</li>
+<li><code>autopilot_config_opened</code> (autopilot_toggle_state: on|off) — autopilot config panel opened</li>
+<li><code>autopilot_payment_method_selection_opened</code> — payment method picker displayed</li>
+<li><code>autopilot_payment_method_available</code> (available_methods: list) — available payment methods shown</li>
+<li><code>autopilot_payment_method_selected</code> (method: card|direct_debit|vrp|other, method_token: masked) — merchant chose payment method</li>
+<li><code>autopilot_payment_method_validation_error</code> (error_type: no_method_on_file|unsupported_method) — validation failed</li>
+<li><code>autopilot_charge_timing_selected</code> (timing_type: on_due_date|smart_weekend) — merchant chose charge timing</li>
+<li><code>autopilot_smart_timing_explained</code> — merchant viewed &quot;skip weekends&quot; explanation</li>
+<li><code>autopilot_smart_timing_enabled</code> (skip_weekends: boolean) — smart timing enabled</li>
+<li><code>autopilot_failure_handling_selected</code> (handling_type: retry|notify|retry_and_notify) — merchant chose failure response</li>
+<li><code>autopilot_retry_delay_selected</code> (retry_days: 3) — merchant set retry delay</li>
+<li><code>autopilot_notification_enabled</code> (notification_type: merchant|recipient|both) — merchant opted into notifications</li>
+<li><code>autopilot_payment_preview_shown</code> (expected_charge_date, payment_method, amount) — charge preview displayed</li>
+<li><code>autopilot_mandate_terms_shown</code> — terms and conditions for mandate displayed (compliance)</li>
+<li><code>autopilot_mandate_accepted</code> — merchant reviewed and accepted</li>
+<li><code>autopilot_config_saved</code> (payment_method, charge_timing, failure_handling, invoice_id) — autopilot configured</li>
+<li><code>autopilot_config_abandoned</code> — merchant closed config without saving</li>
+</ul>
+            <h3 class="section-heading">Subscription State (Recurring + Autopilot)</h3>
+<ul>
+<li><code>subscription_state_reached</code> (invoice_id, frequency, charge_timing) — <strong>HEADLINE METRIC</strong>: both recurring and autopilot enabled</li>
+<li><code>subscription_success_banner_shown</code> (message: &quot;You&#x27;ve turned this into a subscription — Teya will issue AND auto-charge&quot;) — celebration banner displayed</li>
+<li><code>subscription_banner_action_clicked</code> (action: view_scheduled|configure_reminders) — merchant interacted with banner</li>
+<li><code>subscription_badge_displayed_on_invoice</code> (invoice_id) — subscription badge shown on invoice detail/list</li>
+<li><code>subscription_lifecycle_state_changed</code> (previous_state, new_state: pending_first_charge|active|paused|ended) — subscription state changed</li>
+</ul>
+            <h3 class="section-heading">Repeat-Customer Flywheel (Recipient Side)</h3>
+<ul>
+<li><code>repeat_customer_insight_card_shown</code> (customer_name, invoice_count, timeframe_days) — merchant-facing flywheel card displayed</li>
+<li><code>repeat_customer_card_action_clicked</code> (action: queue_autopilot_invite|dismiss) — merchant interacted with card</li>
+<li><code>autopilot_invite_queued_for_recipient</code> (customer_id, invoice_id) — invite queued for next payment page</li>
+<li><code>autopilot_invite_queued_confirmation_shown</code> — confirmation message displayed</li>
+<li><code>recipient_payment_page_loaded_with_autopilot_invite</code> (customer_id, invoice_id) — payment page shown to recipient with autopilot option</li>
+<li><code>recipient_autopilot_prompt_shown</code> — autopilot save-card prompt appeared on payment page</li>
+<li><code>recipient_autopilot_card_saved</code> (mandate_id, payment_method, invoice_id) — <strong>RECIPIENT-SIDE FLYWHEEL CONVERSION</strong>: recipient saved card and authorized mandate</li>
+<li><code>recipient_autopilot_declined</code> (invoice_id) — recipient declined autopilot prompt</li>
+<li><code>recipient_autopilot_reminded_next_cycle</code> (customer_id) — system will re-prompt on next invoice</li>
+</ul>
+            <h3 class="section-heading">Scheduled Invoice Management</h3>
+<ul>
+<li><code>scheduled_invoices_filter_clicked</code> — merchant filtered to Scheduled invoices</li>
+<li><code>scheduled_invoices_view_opened</code> (scheduled_invoice_count, upcoming_invoices_by_date: list) — scheduled view displayed</li>
+<li><code>scheduled_invoice_row_clicked</code> (scheduled_invoice_id, scheduled_date, recurrence_info) — merchant selected scheduled invoice</li>
+<li><code>scheduled_invoice_detail_opened</code> (scheduled_invoice_id, source_type: recurring|one_time_scheduled) — detail page shown</li>
+<li><code>scheduled_invoice_edit_clicked</code> (scheduled_invoice_id, time_until_send_hours) — merchant tapped &quot;Edit&quot;</li>
+<li><code>scheduled_invoice_preview_clicked</code> (scheduled_invoice_id) — merchant opened preview</li>
+<li><code>scheduled_invoice_reschedule_clicked</code> (scheduled_invoice_id, current_datetime, proposed_datetime) — merchant tapped &quot;Reschedule&quot;</li>
+<li><code>scheduled_invoice_new_datetime_selected</code> (scheduled_invoice_id, new_datetime, days_postponed: number) — merchant set new time</li>
+<li><code>scheduled_invoice_rescheduled</code> (scheduled_invoice_id, original_datetime, new_datetime) — reschedule confirmed</li>
+<li><code>scheduled_invoice_cancel_clicked</code> (scheduled_invoice_id, time_until_send_hours) — merchant tapped &quot;Cancel send&quot;</li>
+<li><code>scheduled_invoice_cancel_confirmation_shown</code> — &quot;Confirm cancel?&quot; displayed</li>
+<li><code>scheduled_invoice_cancelled</code> (scheduled_invoice_id, scheduled_datetime) — send cancelled</li>
+<li><code>scheduled_invoice_send_now_clicked</code> (scheduled_invoice_id) — merchant tapped &quot;Send now&quot;</li>
+<li><code>scheduled_invoice_sent_immediately</code> (scheduled_invoice_id, delivery_channel) — invoice sent ahead of schedule</li>
+<li><code>scheduled_invoice_automation_badge_shown</code> (automation_type: recurring|scheduled_send) — badge displayed on scheduled invoice</li>
+<li><code>scheduled_invoice_issued_successfully</code> (scheduled_invoice_id, actual_send_datetime, scheduled_datetime, was_on_time: boolean) — scheduled invoice issued</li>
+<li><code>scheduled_invoice_issue_failed</code> (scheduled_invoice_id, error_type, error_message) — automatic issue failed</li>
+<li><code>scheduled_invoice_retry_queued</code> (scheduled_invoice_id, retry_datetime) — retry scheduled after failure</li>
+</ul>
+            <h3 class="section-heading">Automation Prompt Lifecycle</h3>
+<ul>
+<li><code>automation_prompt_bundle_shown</code> (prompt_count, automation_types: list) — all automation prompts displayed post-send</li>
+<li><code>automation_prompt_section_expanded</code> (prompt_type) — merchant expanded a prompt card</li>
+<li><code>automation_prompt_section_collapsed</code> (prompt_type) — merchant collapsed a prompt card</li>
+<li><code>automation_prompt_info_clicked</code> (prompt_type) — merchant clicked help/info icon</li>
+<li><code>automation_prompt_dismissed</code> (prompt_type) — merchant closed prompt without configuring</li>
+<li><code>automation_prompt_configured</code> (prompt_type, configuration: dict) — prompt configured</li>
+<li><code>automation_all_prompts_completed</code> (prompts_configured: list) — all prompts processed</li>
+<li><code>automation_prompts_skipped_all</code> — merchant clicked &quot;Done&quot; without configuring any automation</li>
+<li><code>automation_dashboard_return</code> (automation_configured_count, automation_types: list) — merchant returned to dashboard</li>
+</ul>
+            <h3 class="section-heading">Automation Badges on Dashboard</h3>
+<ul>
+<li><code>automation_badge_displayed</code> (invoice_id, automation_types: list) — badge showing active automations visible on invoice list</li>
+<li><code>automation_badge_clicked</code> (invoice_id, automation_type) — merchant tapped badge for details</li>
+<li><code>automation_badge_detail_opened</code> (invoice_id, automation_type, config: dict) — automation detail popup shown</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="journey-card" id="journey-8">
+            <div class="journey-header">
+                <div class="journey-number">8</div>
+                <div class="journey-title-block">
+                    <h2>Invoice List &amp; Dashboard</h2>
+                    <p class="journey-description">The invoice list is the merchant&#x27;s home base for all invoicing activity. It surfaces every invoice across its full lifecycle — from scheduled and draft, through sent, viewed, and paid, to overdue — and gives the merchant a single place to triage, filter, and drill in.</p>
+                </div>
+            </div>
+            <div class="mermaid-container">
+                <pre class="mermaid">
+flowchart TD
+    Start([Merchant opens Invoices tab]) --> Landing[Invoice list landing page]
+    Landing --> Summary[Summary bar:<br/>Outstanding · Overdue · Paid this month]
+    Landing --> Filters[Filter chips:<br/>All · Scheduled · Draft · Sent · Viewed · Paid · Overdue]
+    Landing --> Search[Search by client, number, or amount]
+    Landing --> NewBtn[+ New invoice CTA]
+
+    Filters --> List[Filtered invoice list<br/>grouped by status]
+    List --> ScheduledGroup[Scheduled · upcoming<br/>clock icon + days until send]
+    List --> DraftGroup[Drafts · needs review]
+    List --> ActiveGroup[Sent / Viewed / Overdue]
+    List --> PaidGroup[Paid · recent]
+
+    ScheduledGroup --> Row[Invoice row:<br/>client · number · amount · status pill · date]
+    DraftGroup --> Row
+    ActiveGroup --> Row
+    PaidGroup --> Row
+
+    Row --> Detail[Invoice detail page]
+    Row --> QuickActions[Row actions:<br/>Remind · Duplicate · Cancel · Mark paid]
+
+    NewBtn --> Editor[Invoice editor]
+
+    Detail --> End([Merchant takes action])
+    QuickActions --> End
+    Editor --> End
+                </pre>
+            </div>
+            <h3 class="section-heading">Page Views</h3>
+<ul>
+<li><code>invoice_list_opened</code> — dashboard/list page loaded</li>
+<li><code>invoice_list_rendered</code> (invoice_count, rendering_time_ms) — list fully rendered</li>
+<li><code>invoice_list_screen_viewed</code> — list page came into view (mobile tab switch or nav)</li>
+</ul>
+            <h3 class="section-heading">Summary Bar</h3>
+<ul>
+<li><code>summary_bar_displayed</code> (outstanding_total, outstanding_count, overdue_count, overdue_total, paid_this_month_total) — summary metrics shown</li>
+<li><code>summary_outstanding_clicked</code> (outstanding_total, outstanding_count) — merchant tapped Outstanding metric</li>
+<li><code>summary_overdue_clicked</code> (overdue_count, overdue_total) — merchant tapped Overdue metric</li>
+<li><code>summary_paid_this_month_clicked</code> (paid_total, invoice_count) — merchant tapped Paid this month metric</li>
+<li><code>summary_metric_filter_applied</code> (metric_type, resulting_filter) — clicking metric filtered the list</li>
+</ul>
+            <h3 class="section-heading">Filters</h3>
+<ul>
+<li><code>filter_chips_displayed</code> (available_filters: list, current_filter: string) — filter row shown</li>
+<li><code>filter_chip_clicked</code> (filter_value: all|scheduled|draft|sent|viewed|paid|overdue|cancelled, result_count) — merchant selected filter</li>
+<li><code>filter_count_badge_shown</code> (filter_value, count) — badge shown on filter chip</li>
+<li><code>filter_results_updated</code> (previous_count, new_count, filter_value) — list re-filtered</li>
+<li><code>filter_empty_state_shown</code> (filter_value) — no results shown for filter</li>
+<li><code>filter_multi_select_available</code> — if applicable, multi-filter capability shown</li>
+<li><code>filter_clear_all_clicked</code> — merchant tapped &quot;Clear all filters&quot;</li>
+</ul>
+            <h3 class="section-heading">Search &amp; Discovery</h3>
+<ul>
+<li><code>search_field_focused</code> — merchant clicked on search input</li>
+<li><code>search_query_entered</code> (search_term, search_term_length) — merchant typed query</li>
+<li><code>search_autocomplete_suggestions_shown</code> (suggestion_count, suggestion_types: client_names|invoice_numbers|amounts) — suggestions displayed</li>
+<li><code>search_performed</code> (search_term, result_count, search_duration_ms) — search executed</li>
+<li><code>search_results_displayed</code> (result_count, search_term) — results rendered</li>
+<li><code>search_result_clicked</code> (result_type, result_id) — merchant selected a search result</li>
+<li><code>search_cleared</code> — merchant cleared search and returned to full list</li>
+<li><code>search_no_results_shown</code> (search_term) — no results for query</li>
+</ul>
+            <h3 class="section-heading">Invoice List Rows</h3>
+<ul>
+<li><code>invoice_row_viewed</code> (invoice_id, invoice_status, invoice_age_days) — row scrolled into view</li>
+<li><code>invoice_row_clicked</code> (invoice_id, invoice_status, time_on_row_seconds) — merchant tapped invoice row</li>
+<li><code>invoice_row_hovered</code> (invoice_id) — merchant hovered over row (desktop, shows preview/actions)</li>
+<li><code>invoice_row_quick_preview_shown</code> (invoice_id) — quick tooltip/popover shown on hover</li>
+<li><code>invoice_row_status_pill_clicked</code> (invoice_id, status) — merchant clicked status indicator</li>
+<li><code>invoice_row_menu_opened</code> (invoice_id) — overflow menu expanded</li>
+<li><code>invoice_row_menu_closed</code> — overflow menu closed</li>
+</ul>
+            <h3 class="section-heading">Invoice Row Quick Actions</h3>
+<ul>
+<li><code>quick_action_menu_opened</code> (invoice_id, available_actions: list) — action menu displayed</li>
+<li><code>quick_action_remind_clicked</code> (invoice_id, status) — merchant tapped &quot;Remind&quot; / &quot;Send reminder&quot;</li>
+<li><code>quick_action_duplicate_clicked</code> (invoice_id) — merchant tapped &quot;Duplicate&quot;</li>
+<li><code>quick_action_cancel_clicked</code> (invoice_id, status) — merchant tapped &quot;Cancel&quot;</li>
+<li><code>quick_action_mark_paid_clicked</code> (invoice_id) — merchant tapped &quot;Mark as paid&quot;</li>
+<li><code>quick_action_edit_clicked</code> (invoice_id, status) — merchant tapped &quot;Edit&quot;</li>
+<li><code>quick_action_delete_clicked</code> (invoice_id, status) — merchant tapped &quot;Delete&quot;</li>
+<li><code>quick_action_share_clicked</code> (invoice_id) — merchant tapped &quot;Share&quot;</li>
+<li><code>quick_action_download_clicked</code> (invoice_id) — merchant tapped &quot;Download PDF&quot;</li>
+</ul>
+            <h3 class="section-heading">Grouped List Sections</h3>
+<ul>
+<li><code>status_group_header_viewed</code> (status_group: scheduled|draft|sent_viewed|overdue|paid|cancelled) — section header visible</li>
+<li><code>status_group_expanded</code> (status_group, invoice_count) — section expanded (if collapsible)</li>
+<li><code>status_group_collapsed</code> (status_group) — section collapsed</li>
+<li><code>status_group_empty_state_shown</code> (status_group) — &quot;No {{status}} invoices&quot; message shown</li>
+<li><code>scheduled_group_upcoming_badge_shown</code> (days_until_next_send) — &quot;Upcoming · 2 scheduled for tomorrow&quot; badge</li>
+</ul>
+            <h3 class="section-heading">New Invoice CTA</h3>
+<ul>
+<li><code>new_invoice_button_clicked</code> (entry_point: fab|header_button) — merchant tapped &quot;New invoice&quot;</li>
+<li><code>new_invoice_menu_shown</code> (options: blank|from_template|from_job|from_contract|ai_upload) — creation method menu appeared (if available)</li>
+<li><code>new_invoice_method_selected</code> (method: blank|from_template|from_job|from_contract|ai_upload) — merchant chose method</li>
+</ul>
+            <h3 class="section-heading">AI Upload Quick Access</h3>
+<ul>
+<li><code>ai_upload_quick_access_shown</code> — AI upload button visible in header</li>
+<li><code>ai_upload_quick_access_clicked</code> — merchant tapped AI upload shortcut</li>
+<li><code>ai_upload_initiated_from_list</code> — AI upload started from list screen</li>
+</ul>
+            <h3 class="section-heading">Pagination &amp; Infinite Scroll</h3>
+<ul>
+<li><code>invoice_list_pagination_shown</code> (total_pages, current_page) — pagination controls displayed (if applicable)</li>
+<li><code>invoice_list_page_changed</code> (from_page, to_page, invoices_per_page) — merchant went to next/previous page</li>
+<li><code>invoice_list_infinite_scroll_triggered</code> (items_loaded_so_far, total_items) — more items loaded on scroll</li>
+<li><code>invoice_list_reached_end</code> (total_loaded_items) — merchant scrolled to end of list</li>
+</ul>
+            <h3 class="section-heading">List Refresh &amp; Sync</h3>
+<ul>
+<li><code>invoice_list_refresh_clicked</code> — merchant tapped refresh button</li>
+<li><code>invoice_list_refreshing</code> (elapsed_time_ms) — refresh in progress</li>
+<li><code>invoice_list_refreshed</code> (refresh_duration_ms, invoices_updated: count) — refresh completed</li>
+<li><code>invoice_list_auto_refreshed</code> (trigger: periodic|app_foreground|notification) — automatic refresh occurred</li>
+<li><code>invoice_list_sync_conflict_detected</code> — local list conflicts with server</li>
+</ul>
+            <h3 class="section-heading">Empty State</h3>
+<ul>
+<li><code>invoice_list_empty_state_shown</code> — list is empty (first time or after filter)</li>
+<li><code>invoice_list_empty_state_action_clicked</code> (action: create_first_invoice|browse_templates|ai_upload) — merchant interacted with empty state CTA</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="journey-card" id="journey-9">
+            <div class="journey-header">
+                <div class="journey-number">9</div>
+                <div class="journey-title-block">
+                    <h2>Invoice Detail Page</h2>
+                    <p class="journey-description">The merchant opens a single invoice to review, share, remind, or take action. The detail page surfaces the full invoice data, client information, payment status, delivery history, and quick actions (remind, duplicate, share, cancel, mark paid, recurring/autopilot config).</p>
+                </div>
+            </div>
+            <h3 class="section-heading">Page Views</h3>
+<ul>
+<li><code>invoice_detail_opened</code> (invoice_id, invoice_status, invoice_age_days) — invoice detail page loaded</li>
+<li><code>invoice_detail_rendered</code> (invoice_id, rendering_time_ms) — page fully rendered</li>
+<li><code>invoice_detail_scrolled</code> (scroll_position_percent) — merchant scrolled (fire on 25%, 50%, 75%, 100%)</li>
+</ul>
+            <h3 class="section-heading">Invoice Header &amp; Summary</h3>
+<ul>
+<li><code>invoice_header_displayed</code> (invoice_number, client_name, invoice_status, invoice_total) — header shown</li>
+<li><code>invoice_status_pill_displayed</code> (status: draft|scheduled|sent|viewed|paid|overdue|cancelled) — status indicator shown</li>
+<li><code>invoice_status_changed</code> (old_status, new_status) — status changed (e.g. sent → viewed → paid)</li>
+<li><code>invoice_total_displayed</code> (total_amount, currency, tax_breakdown: list) — total and breakdown shown</li>
+<li><code>invoice_payment_status_displayed</code> (paid_amount, outstanding_amount, payment_method_if_paid) — payment status shown</li>
+<li><code>invoice_due_date_displayed</code> (due_date, days_until_due) — due date shown (with indicator if overdue)</li>
+<li><code>invoice_dates_summary_displayed</code> (invoice_date, due_date, reminder_dates) — key dates shown</li>
+</ul>
+            <h3 class="section-heading">Client Information Section</h3>
+<ul>
+<li><code>invoice_client_section_displayed</code> (client_name, client_email, client_address) — client info shown</li>
+<li><code>invoice_client_avatar_clicked</code> (client_id, client_name) — merchant tapped client avatar</li>
+<li><code>invoice_client_name_clicked</code> (client_id, client_name) — merchant tapped client name (navigates to client profile)</li>
+<li><code>invoice_client_email_clicked</code> (client_email) — merchant tapped email (opens mail client or action sheet)</li>
+<li><code>invoice_client_details_edit_clicked</code> — merchant tapped &quot;Edit client&quot;</li>
+<li><code>invoice_client_details_updated</code> (field_changed: name|email|address) — client details edited inline</li>
+</ul>
+            <h3 class="section-heading">Line Items Section</h3>
+<ul>
+<li><code>invoice_line_items_section_displayed</code> (items_count) — line items shown</li>
+<li><code>invoice_line_item_expanded</code> (item_position) — line item expanded for details</li>
+<li><code>invoice_line_item_tax_breakdown_shown</code> (item_position, tax_rate, tax_amount) — tax details displayed</li>
+<li><code>invoice_line_item_discount_shown</code> (item_position, discount_type, discount_amount) — discount shown</li>
+</ul>
+            <h3 class="section-heading">Payment Information</h3>
+<ul>
+<li><code>invoice_payment_methods_displayed</code> (accepted_methods: list) — payment method badges shown</li>
+<li><code>invoice_payment_link_displayed</code> (payment_link_url) — hosted payment page link shown</li>
+<li><code>invoice_payment_link_copied</code> (payment_link_url) — merchant copied link</li>
+<li><code>invoice_payment_link_qr_displayed</code> — QR code shown for payment link</li>
+<li><code>invoice_payment_link_qr_downloaded</code> — merchant downloaded QR code</li>
+<li><code>invoice_payment_history_displayed</code> (payment_count) — payment transaction list shown</li>
+<li><code>invoice_payment_record_viewed</code> (payment_id, payment_date, payment_amount, payment_method) — payment details viewed</li>
+</ul>
+            <h3 class="section-heading">Delivery &amp; Communication History</h3>
+<ul>
+<li><code>invoice_delivery_history_displayed</code> (delivery_count, deliveries: list) — delivery timeline shown</li>
+<li><code>invoice_delivery_record_viewed</code> (delivery_id, delivery_method, delivery_time, recipient_address) — single delivery details viewed</li>
+<li><code>invoice_delivery_status_shown</code> (delivery_id, status: sent|delivered|opened|bounced) — delivery status indicator</li>
+<li><code>invoice_open_tracking_displayed</code> (open_count, first_open_time, last_open_time) — email open tracking shown</li>
+<li><code>invoice_link_click_tracking_displayed</code> (click_count) — link click tracking shown</li>
+<li><code>invoice_reminder_history_displayed</code> (reminder_count, reminders_sent: list) — reminders sent shown</li>
+<li><code>invoice_reminder_record_viewed</code> (reminder_id, reminder_time, reminder_channel) — reminder details viewed</li>
+</ul>
+            <h3 class="section-heading">Action Bar &amp; Quick Actions</h3>
+<ul>
+<li><code>invoice_action_bar_displayed</code> (available_actions: list) — action buttons shown at bottom (or top, depending on device)</li>
+<li><code>invoice_action_remind_clicked</code> (invoice_id, status) — merchant tapped &quot;Remind&quot;</li>
+<li><code>invoice_remind_options_shown</code> (reminder_options: list) — remind method picker displayed</li>
+<li><code>invoice_action_duplicate_clicked</code> (invoice_id) — merchant tapped &quot;Duplicate&quot;</li>
+<li><code>invoice_duplicate_confirmation_shown</code> — &quot;Create duplicate invoice?&quot; modal shown</li>
+<li><code>invoice_duplicated</code> (original_invoice_id, new_invoice_id) — invoice duplicated</li>
+<li><code>invoice_action_share_clicked</code> (invoice_id) — merchant tapped &quot;Share&quot;</li>
+<li><code>invoice_share_sheet_opened</code> (available_methods: list) — share options displayed</li>
+<li><code>invoice_share_method_selected</code> (share_method: email|link|sms|whatsapp|print) — merchant chose method</li>
+<li><code>invoice_action_download_pdf_clicked</code> (invoice_id) — merchant tapped &quot;Download&quot;</li>
+<li><code>invoice_pdf_generated</code> (invoice_id, file_size_bytes, generation_time_ms) — PDF created</li>
+<li><code>invoice_pdf_downloaded</code> (invoice_id, file_size_bytes) — PDF downloaded</li>
+<li><code>invoice_action_edit_clicked</code> (invoice_id, status) — merchant tapped &quot;Edit&quot;</li>
+<li><code>invoice_action_cancel_clicked</code> (invoice_id, status) — merchant tapped &quot;Cancel&quot;</li>
+<li><code>invoice_cancel_confirmation_shown</code> — &quot;Cancel invoice?&quot; modal shown</li>
+<li><code>invoice_cancelled</code> (invoice_id) — invoice cancelled</li>
+<li><code>invoice_action_mark_paid_clicked</code> (invoice_id, status) — merchant tapped &quot;Mark as paid&quot;</li>
+<li><code>invoice_mark_paid_options_shown</code> (payment_methods: list) — payment method selector shown</li>
+<li><code>invoice_mark_paid_confirmed</code> (invoice_id, payment_method) — invoice marked paid</li>
+<li><code>invoice_action_menu_opened</code> — overflow menu expanded</li>
+<li><code>invoice_action_menu_closed</code> — overflow menu collapsed</li>
+<li><code>invoice_action_whatsapp_clicked</code> (invoice_id) — merchant tapped WhatsApp action</li>
+<li><code>invoice_action_print_clicked</code> (invoice_id) — merchant tapped &quot;Print&quot;</li>
+</ul>
+            <h3 class="section-heading">Automation Status &amp; Configuration</h3>
+<ul>
+<li><code>invoice_automations_displayed</code> (automations: list) — active automations shown (reminders, recurring, autopilot badges)</li>
+<li><code>invoice_reminders_status_shown</code> (reminder_schedule: list, next_reminder_date) — reminder config displayed</li>
+<li><code>invoice_reminders_edit_clicked</code> (invoice_id) — merchant tapped &quot;Edit reminders&quot;</li>
+<li><code>invoice_reminders_configuration_changed</code> (new_schedule: list) — reminders updated</li>
+<li><code>invoice_recurring_status_shown</code> (frequency, end_condition, next_issue_date, send_mode) — recurring config displayed</li>
+<li><code>invoice_recurring_edit_clicked</code> (invoice_id) — merchant tapped &quot;Edit recurring&quot;</li>
+<li><code>invoice_recurring_configuration_changed</code> (new_frequency, new_end_condition) — recurring updated</li>
+<li><code>invoice_recurring_pause_clicked</code> (invoice_id) — merchant paused recurring</li>
+<li><code>invoice_recurring_paused</code> (invoice_id, pause_until_date) — recurring paused</li>
+<li><code>invoice_recurring_resume_clicked</code> (invoice_id) — merchant resumed recurring</li>
+<li><code>invoice_autopilot_status_shown</code> (payment_method, charge_timing, failure_handling, next_charge_date) — autopilot config displayed</li>
+<li><code>invoice_autopilot_edit_clicked</code> (invoice_id) — merchant tapped &quot;Edit autopilot&quot;</li>
+<li><code>invoice_autopilot_configuration_changed</code> (new_payment_method, new_charge_timing) — autopilot updated</li>
+<li><code>invoice_autopilot_pause_clicked</code> (invoice_id) — merchant paused autopilot</li>
+<li><code>invoice_autopilot_paused</code> (invoice_id) — autopilot paused</li>
+<li><code>invoice_automation_remove_clicked</code> (automation_type, invoice_id) — merchant removed automation</li>
+<li><code>invoice_automation_removed</code> (automation_type, invoice_id) — automation deleted</li>
+</ul>
+            <h3 class="section-heading">Flywheel &amp; Insight Cards</h3>
+<ul>
+<li><code>invoice_repeat_customer_insight_shown</code> (customer_id, customer_name, invoice_count) — repeat-customer insight card shown</li>
+<li><code>invoice_repeat_customer_action_clicked</code> (action: queue_autopilot_invite|dismiss) — merchant interacted with insight</li>
+<li><code>invoice_recipient_autopilot_readiness_shown</code> (customer_id, payment_methods_on_file: count) — recipient has payment method on file (prompt to enable autopilot)</li>
+<li><code>invoice_recipient_autopilot_invite_queued</code> (customer_id, invoice_id) — merchant opted to queue autopilot invite for recipient</li>
+</ul>
+            <h3 class="section-heading">Related Invoices &amp; History</h3>
+<ul>
+<li><code>invoice_related_invoices_section_shown</code> (customer_id, related_invoice_count) — other invoices for this customer shown</li>
+<li><code>invoice_related_invoice_clicked</code> (related_invoice_id, customer_id) — merchant navigated to related invoice</li>
+</ul>
+            <h3 class="section-heading">Export &amp; Integrations</h3>
+<ul>
+<li><code>invoice_export_clicked</code> (export_format: pdf|json|csv) — merchant tapped export</li>
+<li><code>invoice_exported</code> (invoice_id, export_format, file_size_bytes) — invoice exported</li>
+<li><code>invoice_integration_available_shown</code> (integration_type: accounting|erp|crm) — integration suggestion shown</li>
+<li><code>invoice_integration_clicked</code> (integration_type) — merchant opened integration dialog</li>
+</ul>
+            <h3 class="section-heading">Navigation</h3>
+<ul>
+<li><code>invoice_detail_back_clicked</code> — merchant tapped back button</li>
+<li><code>invoice_detail_exited</code> (time_on_page_seconds) — merchant navigated away</li>
+<li><code>invoice_detail_tab_switched</code> (from_tab, to_tab) — merchant switched tabs (if tabbed interface)</li>
+</ul>
+<p>---</p>
+        </div>
+        <div class="global-events-section" id="global-events">
+            <h2>Global Tracking Events</h2>
+            <h3 class="section-heading">Session &amp; User</h3>
+<ul>
+<li><code>session_started</code> (session_id, user_id, app_version, platform: web|ios|android, device_type) — session initiated</li>
+<li><code>session_ended</code> (session_id, session_duration_seconds, event_count) — session ended (idle, logout, app close)</li>
+<li><code>session_idle_timeout_warning_shown</code> (time_remaining_seconds) — inactivity warning displayed</li>
+<li><code>session_idle_timeout_extended</code> — merchant tapped &quot;Keep me signed in&quot;</li>
+<li><code>session_idle_timeout_expired</code> — merchant was logged out due to inactivity</li>
+<li><code>user_logged_in</code> (user_id, login_method: email|oauth|sso, time_since_last_login_days) — user authenticated</li>
+<li><code>user_logged_out</code> (user_id, session_duration_seconds) — user logged out explicitly</li>
+</ul>
+            <h3 class="section-heading">Navigation</h3>
+<ul>
+<li><code>navigation_tab_clicked</code> (tab: invoices|settings|help|account) — merchant tapped bottom tab or top nav</li>
+<li><code>navigation_menu_opened</code> — navigation menu/drawer opened</li>
+<li><code>navigation_menu_closed</code> — navigation menu closed</li>
+<li><code>page_transition</code> (from_page, to_page, transition_type: push|modal|tab) — page changed</li>
+<li><code>deep_link_opened</code> (deep_link_url, page_destination) — deep link was followed</li>
+</ul>
+            <h3 class="section-heading">Help &amp; Onboarding</h3>
+<ul>
+<li><code>help_icon_clicked</code> (page, context) — merchant tapped help icon</li>
+<li><code>help_menu_opened</code> — help menu appeared</li>
+<li><code>help_article_viewed</code> (article_id, article_title, category) — merchant read help article</li>
+<li><code>help_article_search_performed</code> (search_term, result_count) — merchant searched help</li>
+<li><code>contextual_tooltip_shown</code> (tooltip_id, page, feature) — tooltip displayed</li>
+<li><code>contextual_tooltip_dismissed</code> (tooltip_id) — merchant closed tooltip</li>
+<li><code>contextual_tooltip_action_clicked</code> (tooltip_id, action) — merchant tapped action in tooltip</li>
+<li><code>feature_discovery_nudge_shown</code> (feature: ai_upload|recurring|autopilot|...) — nudge displayed for new/underused feature</li>
+<li><code>feature_discovery_nudge_dismissed</code> (feature) — merchant closed nudge</li>
+<li><code>feature_discovery_nudge_converted</code> (feature, next_action: try_feature|learn_more|dismiss) — merchant took action</li>
+<li><code>in_app_message_shown</code> (message_id, message_type: announcement|promotion|alert) — in-app message displayed</li>
+<li><code>in_app_message_action_clicked</code> (message_id, action) — merchant tapped CTA</li>
+<li><code>in_app_message_dismissed</code> (message_id) — merchant closed message</li>
+<li><code>onboarding_tutorial_started</code> — merchant started guided tutorial</li>
+<li><code>onboarding_tutorial_step_completed</code> (step_number, step_name) — tutorial step finished</li>
+<li><code>onboarding_tutorial_completed</code> — full tutorial completed</li>
+<li><code>onboarding_tutorial_abandoned</code> (completed_steps: count, abandoned_at_step) — merchant quit tutorial early</li>
+</ul>
+            <h3 class="section-heading">Errors &amp; Issues</h3>
+<ul>
+<li><code>error_displayed</code> (error_code, error_type, error_message, page) — error shown to merchant</li>
+<li><code>error_dismissed</code> (error_code) — merchant closed error</li>
+<li><code>error_retry_clicked</code> (error_code) — merchant tapped retry after error</li>
+<li><code>api_error_occurred</code> (error_code, endpoint, http_status, error_message) — API call failed (backend event, may be logged server-side)</li>
+<li><code>validation_error_shown</code> (error_type, field_name, page) — form validation failed</li>
+<li><code>network_error_detected</code> (error_type: timeout|connection_lost|offline) — network issue detected</li>
+<li><code>offline_mode_entered</code> — device went offline</li>
+<li><code>offline_mode_exited</code> — device came back online</li>
+<li><code>app_crash_detected</code> (crash_id, error_type, error_message, stack_trace) — app crashed (session/analytic error boundary)</li>
+<li><code>error_boundary_triggered</code> (error_type, page) — React error boundary caught error</li>
+<li><code>client_side_warning_logged</code> (warning_type, warning_message) — client-side warning (console.warn equivalent)</li>
+</ul>
+            <h3 class="section-heading">Performance Metrics</h3>
+<ul>
+<li><code>page_load_time</code> (page, time_to_interactive_ms, first_contentful_paint_ms) — page load performance</li>
+<li><code>api_response_time</code> (endpoint, method, response_time_ms, data_size_bytes) — API performance</li>
+<li><code>file_upload_time</code> (file_type, file_size_bytes, upload_time_ms) — upload duration</li>
+<li><code>pdf_generation_time</code> (invoice_id, generation_time_ms) — PDF creation duration</li>
+<li><code>ai_extraction_time</code> (file_type, file_size_bytes, processing_time_ms, confidence_level) — AI processing duration</li>
+<li><code>form_submission_time</code> (form_type, submission_time_ms) — form completion duration</li>
+</ul>
+            <h3 class="section-heading">Feature Flags &amp; A/B Tests</h3>
+<ul>
+<li><code>feature_flag_evaluated</code> (flag_name, flag_value: on|off, experiment_id) — feature flag check occurred</li>
+<li><code>feature_flag_exposed</code> (flag_name, flag_value, experiment_id, variant) — merchant exposed to variant</li>
+<li><code>ab_test_assigned</code> (test_id, test_name, variant, variant_description) — merchant assigned to A/B test variant</li>
+<li><code>ab_test_variant_viewed</code> (test_id, variant, page, time_on_variant_seconds) — variant experienced</li>
+<li><code>ab_test_metric_recorded</code> (test_id, variant, metric_type, metric_value) — test metric collected</li>
+</ul>
+            <h3 class="section-heading">Permissions &amp; Consent</h3>
+<ul>
+<li><code>permission_requested</code> (permission_type: camera|contacts|location) — OS permission requested</li>
+<li><code>permission_granted</code> (permission_type, by_user: boolean) — permission approved</li>
+<li><code>permission_denied</code> (permission_type) — permission denied</li>
+<li><code>analytics_consent_requested</code> — privacy/analytics consent dialog shown</li>
+<li><code>analytics_consent_given</code> (consent_type: analytics|marketing) — merchant opted in</li>
+<li><code>analytics_consent_withdrawn</code> — merchant revoked consent</li>
+<li><code>terms_displayed</code> — terms of service shown</li>
+<li><code>terms_accepted</code> — merchant agreed to terms</li>
+<li><code>privacy_policy_opened</code> — merchant read privacy policy</li>
+</ul>
+            <h3 class="section-heading">Product Interactions (Cross-Cutting)</h3>
+<ul>
+<li><code>feature_used</code> (feature_name, feature_context) — generic feature usage event</li>
+<li><code>user_preference_changed</code> (preference_type, old_value, new_value) — merchant changed setting</li>
+<li><code>user_setting_opened</code> (settings_page) — settings page viewed</li>
+<li><code>currency_preference_changed</code> (old_currency, new_currency, scope: merchant_default|invoice_specific) — currency preference updated</li>
+<li><code>language_preference_changed</code> (old_language, new_language) — language preference updated</li>
+<li><code>timezone_preference_changed</code> (old_timezone, new_timezone) — timezone preference updated</li>
+<li><code>notification_preference_changed</code> (notification_type, enabled: boolean) — notification setting toggled</li>
+</ul>
+            <h3 class="section-heading">Sharing &amp; Social</h3>
+<ul>
+<li><code>invoice_shared</code> (share_method: email|link|sms|whatsapp|print, invoice_id) — invoice shared via method</li>
+<li><code>shared_link_generated</code> (link_id, invoice_id, link_scope: merchant|recipient) — share link created</li>
+<li><code>shared_link_opened_by_recipient</code> (link_id, recipient_user_agent) — shared link accessed</li>
+<li><code>shared_link_expired</code> (link_id) — share link expired</li>
+<li><code>social_media_share_clicked</code> (platform) — merchant shared to social (if applicable)</li>
+<li><code>feedback_sent</code> (feedback_type, feedback_text, screenshot_included: boolean) — merchant submitted feedback</li>
+<li><code>feedback_reaction_given</code> (feedback_id, reaction: helpful|not_helpful) — feedback was useful</li>
+</ul>
+            <h3 class="section-heading">System Events (Emitted by Backend/Teya Platform)</h3>
+<ul>
+<li><code>invoice_created</code> (invoice_id, creation_method: manual|ai|job|contract|template, template_id) — new invoice created (backend event)</li>
+<li><code>invoice_updated</code> (invoice_id, fields_changed: list) — invoice modified</li>
+<li><code>invoice_sent</code> (invoice_id, delivery_channel, recipient_email, scheduled: boolean) — invoice delivered (backend event)</li>
+<li><code>invoice_reminder_scheduled</code> (invoice_id, reminder_type, reminder_datetime) — reminder queued (backend event)</li>
+<li><code>invoice_paid_partially</code> (invoice_id, paid_amount, outstanding_amount, payment_method) — partial payment received (backend event)</li>
+<li><code>invoice_paid_fully</code> (invoice_id, total_paid, payment_method, settlement_status) — invoice paid in full (backend event)</li>
+<li><code>invoice_overdue</code> (invoice_id, days_overdue) — invoice passed due date (backend event, may trigger notifications)</li>
+<li><code>invoice_marked_unpaid</code> (invoice_id, reason) — merchant reset paid status (backend event)</li>
+<li><code>recurring_invoice_issued</code> (recurring_id, issued_invoice_id, issue_datetime) — recurring invoice auto-generated (backend event)</li>
+<li><code>recurring_invoice_failed</code> (recurring_id, error_type, error_message, retry_scheduled: boolean) — recurring auto-issue failed (backend event)</li>
+<li><code>autopilot_charge_attempted</code> (autopilot_id, invoice_id, charge_amount, charge_datetime) — autopilot initiated charge (backend event)</li>
+<li><code>autopilot_charge_succeeded</code> (autopilot_id, invoice_id, charge_amount, settlement_reference) — autopilot collected payment (backend event)</li>
+<li><code>autopilot_charge_failed</code> (autopilot_id, invoice_id, error_type, error_message, retry_scheduled: boolean) — autopilot charge declined (backend event)</li>
+<li><code>recipient_opened_link</code> (invoice_id, recipient_id, link_open_datetime, recipient_user_agent) — recipient clicked payment link (backend event from payment page analytics)</li>
+<li><code>recipient_viewed_invoice</code> (invoice_id, recipient_id, view_datetime) — recipient viewed invoice (backend event, may be tracked via email open or link click)</li>
+<li><code>recipient_autopilot_accepted</code> (autopilot_invite_id, customer_id, mandate_id, payment_method) — recipient saved card and enrolled in autopilot (backend event, <strong>HEADLINE RECIPIENT-SIDE METRIC</strong>)</li>
+<li><code>mandate_created</code> (mandate_id, customer_id, payment_method, mandate_type) — payment mandate authorized (backend event)</li>
+<li><code>mandate_failed</code> (mandate_id, customer_id, error_type, error_message) — mandate authorization failed (backend event)</li>
+<li><code>payment_reconciliation_completed</code> (invoice_id, reconciliation_status: matched|pending|unmatched) — payment matched to invoice (backend event)</li>
+<li><code>template_created</code> (template_id, template_source: from_invoice|from_scratch, creator_id) — invoice template saved (backend event)</li>
+<li><code>template_used</code> (template_id, new_invoice_id, created_by: merchant|system) — template applied (backend event)</li>
+<li><code>client_created</code> (client_id, created_via: manual|ai_extraction|import) — new client added (backend event)</li>
+<li><code>client_auto_suggested</code> (client_id, source: history|autocomplete) — client suggested to merchant (backend event)</li>
+</ul>
+<p>---</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="footer">
+            User Journeys: Invoice Creation UX • Generated from benchmark · Last updated 2026-04-09
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#DDE048',
+                primaryTextColor: '#151515',
+                primaryBorderColor: '#151515',
+                lineColor: '#151515',
+                secondaryColor: '#F1F3B6',
+                tertiaryColor: '#F5F5F5'
+            }
+        });
+        mermaid.contentLoaded();
+    </script>
+</body>
+</html>
