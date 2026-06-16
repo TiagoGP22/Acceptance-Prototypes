@@ -25,7 +25,6 @@
       -webkit-font-smoothing: antialiased;
     }
     .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
-
     header { padding: 56px 0 40px; border-bottom: 1px solid var(--border); }
     .badge {
       display: inline-block; background: var(--lime); color: #1a1d12;
@@ -35,7 +34,6 @@
     }
     h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
     header p { color: var(--muted); margin-top: 10px; font-size: 16px; max-width: 620px; }
-
     main { padding: 40px 0 80px; }
     .category { margin-bottom: 44px; }
     .category-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
@@ -44,7 +42,6 @@
       font-size: 13px; color: var(--muted); background: var(--surface);
       border: 1px solid var(--border); padding: 2px 9px; border-radius: 999px;
     }
-
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
     .card {
       display: block; background: var(--surface); border: 1px solid var(--border);
@@ -55,16 +52,13 @@
     .card .title { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; }
     .card .desc { color: var(--muted); font-size: 14px; margin-top: 6px; }
     .card .arrow { color: var(--lime); font-weight: 700; }
-
     .empty {
       border: 1px dashed var(--border); border-radius: 14px; padding: 20px;
       color: var(--muted); font-size: 14px; background: transparent;
     }
     .empty code { color: var(--lime-soft); font-size: 13px; }
-
     footer { border-top: 1px solid var(--border); padding: 28px 0 48px; color: var(--muted); font-size: 13px; }
     footer a { color: var(--lime-soft); }
-
     /* ---- Password gate (deterrent only) ---- */
     #gate {
       position: fixed; inset: 0; z-index: 9999; background: var(--bg);
@@ -89,13 +83,11 @@
   </style>
 </head>
 <body class="locked">
-
   <!-- ============================================================= -->
   <!-- PASSWORD: change the value below to set your team's password.  -->
   <!-- Note: this is a deterrent only. See README "Security" section. -->
   <!-- ============================================================= -->
   <script>window.SITE_PASSWORD = "teya-prototypes";</script>
-
   <div id="gate">
     <div class="box">
       <span class="badge">Acceptance Team</span>
@@ -108,7 +100,6 @@
       </form>
     </div>
   </div>
-
   <div id="app">
     <header>
       <div class="wrap">
@@ -117,10 +108,8 @@
         <p>A shared home for clickable prototypes across our product areas. Pick an area below to open the latest builds.</p>
       </div>
     </header>
-
     <main>
       <div class="wrap">
-
         <section class="category">
           <div class="category-head">
             <h2>Terminal and Tap</h2>
@@ -133,15 +122,18 @@
             </a>
           </div>
         </section>
-
         <section class="category">
           <div class="category-head">
             <h2>eCommerce</h2>
-            <span class="count">0 prototypes</span>
+            <span class="count">1 prototype</span>
           </div>
-          <div class="empty">No prototypes yet. Drop them into <code>/ecommerce</code> and add a card here.</div>
+          <div class="grid">
+            <a class="card" href="ecommerce/user-journeys-invoice-creation.html">
+              <div class="title">Invoice Creation UX <span class="arrow">→</span></div>
+              <div class="desc">User journeys for Teya Invoices — first-time onboarding, new invoice from scratch, and the core editor flow.</div>
+            </a>
+          </div>
         </section>
-
         <section class="category">
           <div class="category-head">
             <h2>Platform and Services</h2>
@@ -149,7 +141,6 @@
           </div>
           <div class="empty">No prototypes yet. Drop them into <code>/platform-and-services</code> and add a card here.</div>
         </section>
-
         <section class="category">
           <div class="category-head">
             <h2>Gateway</h2>
@@ -178,7 +169,6 @@
               </a>
              </div>
         </section>
-
         <section class="category">
           <div class="category-head">
             <h2>Host</h2>
@@ -186,17 +176,14 @@
           </div>
           <div class="empty">No prototypes yet. Drop them into <code>/host</code> and add a card here.</div>
         </section>
-
       </div>
     </main>
-
     <footer>
       <div class="wrap">
         Maintained by the Acceptance Team · Hosted on GitHub Pages · See README to add a prototype.
       </div>
     </footer>
   </div>
-
   <script>
     (function () {
       var body = document.body;
@@ -204,15 +191,12 @@
       var input = document.getElementById('gatePw');
       var err = document.getElementById('gateErr');
       var gate = document.getElementById('gate');
-
       // Stay unlocked for the browser session after a correct entry.
       if (sessionStorage.getItem('at_unlocked') === '1') { unlock(); }
-
       function unlock() {
         body.classList.remove('locked');
         gate.style.display = 'none';
       }
-
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         if (input.value === window.SITE_PASSWORD) {
