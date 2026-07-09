@@ -5599,54 +5599,14 @@ function MotoInfoScreen({
       fontWeight: 700,
       marginBottom: 4
     }
-  }, "Request Manual Entry"), /*#__PURE__*/React.createElement("div", {
+  }, "Upload a previous acquirer statement"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
       color: T.color.secondary,
       marginBottom: 20,
       lineHeight: 1.5
     }
-  }, "To determine your eligibility, we need to understand your use case and review your transaction history."), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 20
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 14,
-      fontWeight: 600,
-      marginBottom: 6,
-      color: T.color.primary
-    }
-  }, "Why do you need Manual Entry? ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: T.color.negative
-    }
-  }, "*")), /*#__PURE__*/React.createElement("textarea", {
-    value: useCase,
-    onChange: e => setUseCase(e.target.value),
-    placeholder: "Describe your use case...",
-    rows: 4,
-    style: {
-      width: "100%",
-      padding: "12px 14px",
-      borderRadius: T.radius.md,
-      border: `1.5px solid ${T.color.borderMed}`,
-      fontSize: 14,
-      fontFamily: T.font,
-      outline: "none",
-      background: T.color.bgDefault,
-      color: T.color.primary,
-      boxSizing: "border-box",
-      resize: "vertical",
-      lineHeight: 1.5
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12,
-      color: T.color.tertiary,
-      marginTop: 4
-    }
-  }, "Be specific about why a payment link wouldn't work for your customers.")), /*#__PURE__*/React.createElement("div", {
+  }, "To activate phone and mail order payments, we need to review a recent transaction history, including evidence of MOTO payments."), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 20
     }
@@ -5668,7 +5628,7 @@ function MotoInfoScreen({
       marginBottom: 10,
       lineHeight: 1.5
     }
-  }, "Upload a statement or report from your previous acquirer showing at least 6 months of MOTO transaction history. This is required to assess your eligibility."), historyUploaded ? /*#__PURE__*/React.createElement("div", {
+  }, "Please upload statements or reports covering the last 6 months. You can upload more than one file."), historyUploaded ? /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -5727,14 +5687,14 @@ function MotoInfoScreen({
       background: T.color.bgElevated,
       color: T.color.primary
     }
-  }, I.upload, " Upload transaction history"), /*#__PURE__*/React.createElement("div", {
+  }, I.upload, " Upload document"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
       color: T.color.tertiary,
       marginTop: 6,
       lineHeight: 1.4
     }
-  }, "Accepted formats: PDF, CSV, XLS. Max file size: 10 MB.")), /*#__PURE__*/React.createElement("div", {
+  }, "PDF, JPG, PNG, XLSX or CSV (max 10MB)")), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "10px 14px",
       borderRadius: T.radius.md,
@@ -5755,7 +5715,7 @@ function MotoInfoScreen({
       flexShrink: 0,
       marginTop: 1
     }
-  }, I.shield), /*#__PURE__*/React.createElement("span", null, "Manual entry carries a higher fraud risk. Requests are reviewed within 2", "\u2013", "3 working days and may not be approved for all merchants."))), /*#__PURE__*/React.createElement(PrimaryBtn, {
+  }, I.shield), /*#__PURE__*/React.createElement("span", null, "MOTO is subject to review and approval. We'll be in touch once your documents have been assessed."))), /*#__PURE__*/React.createElement(PrimaryBtn, {
     label: submitting ? "Submitting\u2026" : "Submit request",
     onClick: canSubmit && !submitting ? handleSubmit : undefined,
     disabled: !canSubmit || submitting
