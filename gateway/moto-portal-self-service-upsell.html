@@ -327,13 +327,57 @@
   }
   .mf-upload:hover { background: #fafac7; border-color: #46520f; color: #29320c; }
   .mf-file { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid #cfe898; background: #ecfcca; border-radius: 12px; }
+  .mf-file[hidden] { display: none; }
   .mf-file svg { color: #497d00; flex-shrink: 0; }
   .mf-file-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #2c3d08; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mf-file-remove { background: transparent; border: none; color: #46520f; cursor: pointer; padding: 4px; border-radius: 6px; display: inline-flex; }
   .mf-file-remove:hover { background: #0000000d; }
+  .mf-file-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .mf-file-list:empty { margin-top: 0; }
+  .mf-section-title { font-size: 16px; line-height: 22px; font-weight: 600; color: #090806ec; margin: 4px 0 6px; }
+  .mf-note { display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #ecfcca; border: 1px solid #cfe898; border-radius: 12px; margin-bottom: 22px; font-size: 13px; line-height: 19px; color: #2c3d08; }
+  .mf-note[hidden] { display: none; }
+  .mf-note svg { color: #497d00; flex-shrink: 0; margin-top: 1px; }
   .mf-warning { display: flex; gap: 10px; padding: 12px 14px; background: #fff7d1; border: 1px solid #e09b0040; border-radius: 12px; }
   .mf-warning svg { color: #a35200; flex-shrink: 0; margin-top: 1px; }
   .mf-warning-text { font-size: 13px; line-height: 19px; color: #a35200; }
+
+  /* ===== Store selector ===== */
+  .store-search { display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 12px; border: 1px solid #756b5733; border-radius: 12px; margin-bottom: 10px; }
+  .store-search svg { color: #16140e8c; flex-shrink: 0; }
+  .store-search input { flex: 1; border: none; outline: none; background: transparent; font-family: inherit; font-size: 14px; color: #090806ec; }
+  .store-search input::placeholder { color: #211c1266; }
+  .store-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .store-chip { display: inline-flex; align-items: center; gap: 4px; padding: 5px 6px 5px 11px; background: #f1f3b6; border-radius: 9999px; font-size: 12px; font-weight: 600; color: #46520f; }
+  .store-chip button { background: transparent; border: none; cursor: pointer; color: #46520f; font-size: 15px; line-height: 1; padding: 0 3px; border-radius: 50%; }
+  .store-chip button:hover { background: #0000000d; }
+  .store-list { display: flex; flex-direction: column; gap: 6px; }
+  .store-list--scroll { max-height: 260px; overflow-y: auto; padding-right: 2px; }
+  .store-row { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #756b571a; border-radius: 12px; cursor: pointer; transition: background-color 100ms ease-out, border-color 100ms ease-out; }
+  .store-row:hover { background: #fafaf8; border-color: #756b5733; }
+  .store-row input { width: 18px; height: 18px; accent-color: #497d00; flex-shrink: 0; cursor: pointer; }
+  .store-row-info { flex: 1; min-width: 0; }
+  .store-row-name { font-size: 14px; font-weight: 600; color: #090806ec; }
+  .store-row-meta { font-size: 12px; color: #16140e8c; margin-top: 1px; }
+  .store-row--ineligible { cursor: not-allowed; background: #fafaf8; }
+  .store-row--ineligible:hover { background: #fafaf8; border-color: #756b571a; }
+  .store-row--ineligible .store-row-name { color: #16140e8c; }
+  .store-row--ineligible input { cursor: not-allowed; }
+  .store-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 9999px; flex-shrink: 0; line-height: 16px; }
+  .store-badge--eligible { background: #ecfcca; color: #497d00; }
+  .store-badge--ineligible { background: #f1efe8; color: #888780; }
+  .store-badge--pending { background: #fbe3a6; color: #8a4b00; }
+  .store-badge--active { background: #d8f3a8; color: #3d6a00; }
+  .store-badge--declined { background: #fcebeb; color: #a32d2d; }
+  .store-empty { font-size: 13px; color: #16140e8c; text-align: center; padding: 18px; background: #fafaf8; border-radius: 12px; }
+
+  /* Per-store state list (pending / active panes) */
+  .moto-store-state-list { display: flex; flex-direction: column; gap: 8px; }
+  .store-line { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #fafaf8; border-radius: 12px; }
+  .store-line-icon { width: 38px; height: 38px; border-radius: 10px; background: #ecfcca; color: #497d00; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .store-line-info { flex: 1; min-width: 0; }
+  .store-line-name { font-size: 14px; font-weight: 600; color: #090806ec; }
+  .store-line-meta { font-size: 12px; color: #16140e8c; margin-top: 1px; }
   .pp-btn--primary:disabled { background: #ececc6; color: #a3a380; cursor: not-allowed; }
   .pp-btn--primary:disabled:hover { background: #ececc6; }
 
@@ -486,7 +530,7 @@
             <div class="pp-product-card-icon pp-product-card-icon--brand"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg></div>
             <div class="pp-product-card-body">
               <div class="pp-product-card-title">MOTO</div>
-              <div class="pp-product-card-sub" id="ppMotoSub">Take card payments over the phone</div>
+              <div class="pp-product-card-sub" id="ppMotoSub">Key in card details on your terminal</div>
             </div>
             <span class="pp-product-badge pp-product-badge--inactive" id="ppMotoBadge">Inactive</span>
           </a>
@@ -561,30 +605,16 @@
           <div class="prod-hero-icon">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#46520f" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
           </div>
-          <h2 class="prod-hero-title">Manual entry payments</h2>
-          <p class="prod-hero-body">Key card details directly into your terminal to accept phone and mail order payments.</p>
-          <div class="prod-hero-facts">
-            <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>Uses your existing terminals</span>
-            <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>No setup or monthly cost</span>
-            <span class="prod-fact"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>Reviewed in 3 working days</span>
-          </div>
+          <h2 class="prod-hero-title">MOTO</h2>
+          <p class="prod-hero-body">MOTO (mail order / telephone order) payments allow you to key card details directly into your terminal to accept payments taken over the phone or by mail.</p>
         </section>
 
         <section class="pl-callout">
           <span class="pl-callout-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1.5-1.5"/></svg></span>
           <div>
             <div class="pl-callout-title">Can you send a payment link instead?</div>
-            <div class="pl-callout-body">Payment Links are the quickest and most secure way to get paid remotely. The customer pays on a secure checkout page — no card details need to be shared with you.</div>
+            <div class="pl-callout-body">Payment Links are the most secure way to get paid remotely. The customer pays on a secure checkout page — no card details need to be shared with you.</div>
             <a class="pl-callout-link" href="./pay-by-link.html">Learn about Payment Links <span aria-hidden="true">›</span></a>
-          </div>
-        </section>
-
-        <section class="pf-card">
-          <h2 class="pf-card-title">How it works</h2>
-          <div class="prod-steps">
-            <div class="prod-step"><div class="prod-step-num">1</div><div><div class="prod-step-title">Take the order over the phone</div><div class="prod-step-body">Agree the order and total with your customer while they're on the call.</div></div></div>
-            <div class="prod-step"><div class="prod-step-num">2</div><div><div class="prod-step-title">Key the card details straight into the terminal</div><div class="prod-step-body">On an enabled terminal in MOTO mode, type the card number, expiry and CVV as the customer reads them out.</div></div></div>
-            <div class="prod-step"><div class="prod-step-num">3</div><div><div class="prod-step-title">Take the payment and send a receipt</div><div class="prod-step-body">Confirm the payment and send a receipt by email or SMS.</div></div></div>
           </div>
         </section>
 
@@ -593,12 +623,12 @@
           <div class="td-data-list">
             <div class="td-data-row"><span class="td-data-label">Surcharge</span><span class="td-data-value">+1%</span></div>
           </div>
-          <p class="td-note">Applied on top of your standard acquiring fee for each manual entry payment. No setup or monthly fee. The surcharge reflects the higher fraud risk of card-not-present transactions.</p>
+          <p class="td-note">Applied on top of your standard acquiring fee for each MOTO transaction. No monthly fee.</p>
         </section>
 
         <section class="pf-card">
           <h2 class="pf-card-title" style="margin-bottom:8px">Subject to approval</h2>
-          <p style="font-size:14px; line-height:21px; color:#16140e8c; margin:0">Because card-not-present payments carry more risk, every request goes through an eligibility check and isn't guaranteed. If approved, we'll enable MOTO on your chosen terminals — reviews are typically complete in 3 working days.</p>
+          <p style="font-size:14px; line-height:21px; color:#16140e8c; margin:0">MOTO is subject to review and approval. We'll be in touch once your request has been reviewed.</p>
         </section>
 
         <div class="prod-cta">
@@ -627,16 +657,20 @@
           <span class="ec-status-clock"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
           <div class="ec-status-main">
             <div class="ec-status-title">Your request is under review</div>
-            <div class="ec-status-sub">We're checking your eligibility. This usually takes 3 working days — we'll email you when there's a decision.</div>
+            <div class="ec-status-sub">We're reviewing your MOTO request. This usually takes 3 working days. We'll notify you once a decision is made.</div>
           </div>
-          <span class="pp-product-badge pp-product-badge--pending">Pending</span>
+          <span class="pp-product-badge pp-product-badge--pending">Pending review</span>
+        </section>
+
+        <section class="pf-card">
+          <h2 class="pf-card-title">Stores in review</h2>
+          <div id="motoPendingStores" class="moto-store-state-list"></div>
         </section>
 
         <section class="pf-card">
           <h2 class="pf-card-title">What you submitted</h2>
           <div class="td-data-list">
             <div class="td-data-row"><span class="td-data-label">Requested</span><span class="td-data-value" id="motoReqDate">—</span></div>
-            <div class="td-data-row" style="align-items:flex-start"><span class="td-data-label">Terminals</span><span class="td-data-value td-data-value--wrap" id="motoReqTerminals">—</span></div>
             <div class="td-data-row"><span class="td-data-label">Transaction history</span><span class="td-data-value" id="motoReqFile">—</span></div>
           </div>
         </section>
@@ -644,9 +678,9 @@
         <section class="pf-card">
           <h2 class="pf-card-title">What happens next</h2>
           <div class="prod-steps">
-            <div class="prod-step"><div class="prod-step-num">1</div><div><div class="prod-step-title">We review your request</div><div class="prod-step-body">Our team checks your transaction history and account, usually within 3 working days.</div></div></div>
+            <div class="prod-step"><div class="prod-step-num">1</div><div><div class="prod-step-title">We review your request</div><div class="prod-step-body">Our team reviews your request, usually within 3 working days.</div></div></div>
             <div class="prod-step"><div class="prod-step-num">2</div><div><div class="prod-step-title">We let you know</div><div class="prod-step-body">You'll get an email with the decision. Not every request is approved.</div></div></div>
-            <div class="prod-step"><div class="prod-step-num">3</div><div><div class="prod-step-title">Start taking MOTO payments</div><div class="prod-step-body">Once approved, your selected terminals can take phone payments straight away.</div></div></div>
+            <div class="prod-step"><div class="prod-step-num">3</div><div><div class="prod-step-title">Start taking MOTO payments</div><div class="prod-step-body">Once approved, your eligible stores can take MOTO payments straight away.</div></div></div>
           </div>
         </section>
 
@@ -667,7 +701,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
             </button>
             <div class="td-more-menu" id="motoMoreMenu">
-              <button type="button" class="td-more-menu-item" id="motoEditFromMenu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit terminals</button>
+              <button type="button" class="td-more-menu-item" id="motoAddFromMenu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add a store</button>
               <button type="button" class="td-more-menu-item td-more-menu-item--danger" id="motoDeactivate"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>Turn off MOTO</button>
             </div>
           </div>
@@ -683,18 +717,18 @@
         </section>
 
         <section class="pf-card">
-          <h2 class="pf-card-title">Enabled terminals</h2>
-          <div id="motoEnabledList" class="moto-enabled-list"></div>
-          <button type="button" class="pp-btn pp-btn--secondary" id="motoEditTerminalsBtn" style="margin-top:16px">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Edit terminals
+          <h2 class="pf-card-title">Stores</h2>
+          <div id="motoActiveStores" class="moto-store-state-list"></div>
+          <button type="button" class="pp-btn pp-btn--secondary" id="motoAddStoreBtn" style="margin-top:16px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add a store
           </button>
         </section>
 
         <section class="pf-card">
           <h2 class="pf-card-title">How to take a MOTO payment</h2>
           <ol class="moto-howto">
-            <li>On an enabled terminal, choose <strong>MOTO</strong> from the main menu</li>
+            <li>On your terminal, choose <strong>MOTO</strong> from the main menu</li>
             <li>Enter the payment amount</li>
             <li>Key in the card number, expiry and CVV as the customer reads them out</li>
             <li>Confirm the payment and send a receipt by email or SMS</li>
@@ -714,37 +748,32 @@
       <button type="button" class="pp-modal-close" data-moto-close><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="pp-modal-body">
-      <p class="pp-modal-desc">Choose which terminals you'd like to take MOTO payments, then upload your recent transaction history so we can review your eligibility.</p>
-
-      <div class="mf-field">
-        <label class="mf-label">Terminals <span class="req">*</span></label>
-        <div class="mf-help" style="margin-top:0; margin-bottom:8px">Tell us which terminals you'd like to use MOTO on. If approved, these are the terminals we'll switch it on for.</div>
-        <div class="moto-selectall">
-          <span id="motoReqSelectedCount">0 selected</span>
-          <button type="button" id="motoReqSelectAll">Select all</button>
-        </div>
-        <div id="motoReqTerminalList"></div>
+      <div class="mf-field" id="motoReqStoreField">
+        <label class="mf-label" style="margin-bottom:6px">Which stores need MOTO? <span class="req">*</span></label>
+        <div class="mf-help" style="margin-top:0; margin-bottom:10px">Select the stores where you'll accept mail order and telephone order payments.</div>
+        <div id="motoReqStores"></div>
       </div>
 
-      <div class="mf-field">
+      <div class="mf-field" id="motoDocsField">
         <label class="mf-label">6 months of MOTO transaction history <span class="req">*</span></label>
-        <div class="mf-help" style="margin-top:0; margin-bottom:8px">Upload a statement or report from your previous acquirer showing at least 6 months of MOTO transaction history. This is required to assess your eligibility.</div>
-        <input type="file" id="motoFileInput" accept=".pdf,.csv,.xls,.xlsx" hidden>
+        <div class="mf-help" style="margin-top:2px; margin-bottom:8px">Upload a recent statement or report from your previous acquirer showing evidence of MOTO payments over the last 6 months. You can upload more than one file.</div>
+        <input type="file" id="motoFileInput" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.csv" multiple hidden>
         <button type="button" class="mf-upload" id="motoUploadBtn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Upload transaction history
+          Upload document
         </button>
-        <div class="mf-file" id="motoFileChip" hidden style="margin-top:8px">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          <span class="mf-file-name" id="motoFileName"></span>
-          <button type="button" class="mf-file-remove" id="motoFileRemove" aria-label="Remove file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
-        </div>
-        <div class="mf-help">Accepted formats: PDF, CSV, XLS. Max file size: 10 MB.</div>
+        <div id="motoFileList" class="mf-file-list"></div>
+        <div class="mf-help">PDF, JPG, PNG, XLSX or CSV (max 10MB)</div>
+      </div>
+
+      <div class="mf-note" id="motoDocsExempt" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>You've been with Teya for over 6 months, so you don't need to upload transaction history.</span>
       </div>
 
       <div class="mf-warning">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        <div class="mf-warning-text">We'll review your request within 3 working days.</div>
+        <div class="mf-warning-text" id="motoWarningText">MOTO is subject to review and approval. We'll be in touch once your documents have been assessed.</div>
       </div>
     </div>
     <div class="pp-modal-footer">
@@ -754,25 +783,22 @@
   </div>
 </div>
 
-<!-- Terminals modal (after approval) -->
-<div class="pp-modal-backdrop" id="motoTermsModal">
+<!-- Add-a-store modal (after approval) -->
+<div class="pp-modal-backdrop" id="motoAddStoreModal">
   <div class="pp-modal">
     <div class="pp-modal-header">
-      <h2 class="pp-modal-title">Edit MOTO terminals</h2>
+      <h2 class="pp-modal-title">Add a store</h2>
       <button type="button" class="pp-modal-close" data-moto-close><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="pp-modal-body">
-      <p class="pp-modal-desc">Choose which of your terminals take MOTO payments. These are the terminals MOTO was approved for.</p>
-      <div class="moto-selectall">
-        <span id="motoSelectedCount">0 selected</span>
-        <button type="button" id="motoSelectAll">Select all</button>
-      </div>
-      <div id="motoTerminalList"></div>
+      <p class="pp-modal-desc">Choose which stores to add. Each new store goes through review before MOTO is switched on.</p>
+      <div id="motoAddStores"></div>
+      <div id="motoAddEmpty" class="store-empty" hidden>MOTO is already requested for all of your stores.</div>
     </div>
-    <p class="pp-modal-fee">A +1% surcharge applies on top of your standard acquiring fee for every manual entry payment, whichever terminal takes it.</p>
+    <p class="pp-modal-fee">A +1% surcharge applies on top of your standard acquiring fee for every manual entry payment.</p>
     <div class="pp-modal-footer">
       <button type="button" class="pp-btn pp-btn--secondary" data-moto-close>Cancel</button>
-      <button type="button" class="pp-btn pp-btn--primary" id="motoSaveTerms">Save changes</button>
+      <button type="button" class="pp-btn pp-btn--primary" id="motoAddConfirm" disabled>Add stores</button>
     </div>
   </div>
 </div>
@@ -780,37 +806,36 @@
 <script>
 /* ---------- Fallback data + helpers (used when not embedded in the portal runtime) ---------- */
 (function () {
+  /* Multi-store company. `eligible:false` = MCC not permitted for MOTO (shown but unselectable).
+     Change this list to 1 store to see the single-store flow, or 6+ to see the search-first variant. */
   var STORES = [
-    { id: 'store-camden',    name: 'Camden' },
-    { id: 'store-shoredtch', name: 'Shoreditch' },
-    { id: 'store-soho',      name: 'Soho' },
-    { id: 'store-brighton',  name: 'Brighton' }
+    { id: 'store-camden',    name: 'Camden Road',         city: 'London',   eligible: true },
+    { id: 'store-shoredtch', name: 'Shoreditch High St',  city: 'London',   eligible: true },
+    { id: 'store-soho',      name: 'Soho Square',         city: 'London',   eligible: false, reason: 'Business type not eligible for MOTO' },
+    { id: 'store-brighton',  name: 'Brighton Lanes',      city: 'Brighton', eligible: true },
+    { id: 'store-bristol',   name: 'Bristol Harbourside', city: 'Bristol',  eligible: true }
   ];
+  window.TEYA_STORES = STORES;
+  /* Merchants with Teya 6+ months are exempt from uploading transaction history (still subject to approval).
+     Set monthsWithTeya below 6 to require the document upload. */
+  window.TEYA_MERCHANT = { monthsWithTeya: 3 };
   if (!window.teyaGetStoreName) {
     window.teyaGetStoreName = function (id) { var s = STORES.find(function (x) { return x.id === id; }); return s ? s.name : id; };
   }
-  if (!window.TEYA_TERMINALS) {
-    window.TEYA_TERMINALS = [
-      { id: 't-001', name: 'Till 1',      model: 'Teya Mini', storeId: 'store-camden',    status: 'active' },
-      { id: 't-002', name: 'Counter',     model: 'Teya Mini', storeId: 'store-shoredtch', status: 'active' },
-      { id: 't-003', name: 'Back office', model: 'Teya Pro',  storeId: 'store-soho',      status: 'active' },
-      { id: 't-006', name: 'Bar',         model: 'Teya Mini', storeId: 'store-camden',    status: 'active' }
-    ];
-  }
-  window.TEYA_TERMINALS.forEach(function (t) { if (!t.name) t.name = t.model; });
   if (!window.TEYA_PRODUCTS) window.TEYA_PRODUCTS = {};
   function readMoto() { try { return JSON.parse(localStorage.getItem('teya_moto')); } catch (e) { return null; } }
   function writeMoto(m) {
     try {
       localStorage.setItem('teya_moto', JSON.stringify({
         status: m.status || (m.active ? 'active' : 'none'),
-        useCase: m.useCase || '', fileName: m.fileName || '', requestedAt: m.requestedAt || '',
-        enabledTerminals: m.enabledTerminals || []
+        fileName: m.fileName || '', requestedAt: m.requestedAt || '',
+        stores: m.stores || []
       }));
     } catch (e) {}
   }
-  if (!window.TEYA_PRODUCTS.moto) window.TEYA_PRODUCTS.moto = readMoto() || { status: 'none', enabledTerminals: [] };
-  if (!window.TEYA_PRODUCTS.moto.status) window.TEYA_PRODUCTS.moto.status = window.TEYA_PRODUCTS.moto.active ? 'active' : 'none';
+  if (!window.TEYA_PRODUCTS.moto) window.TEYA_PRODUCTS.moto = readMoto() || { status: 'none', stores: [] };
+  if (!window.TEYA_PRODUCTS.moto.status) window.TEYA_PRODUCTS.moto.status = 'none';
+  if (!window.TEYA_PRODUCTS.moto.stores) window.TEYA_PRODUCTS.moto.stores = [];
   if (!window.teyaActivateProduct) window.teyaActivateProduct = function (k, cfg) { window.TEYA_PRODUCTS[k] = Object.assign({}, window.TEYA_PRODUCTS[k], { active: true, status: 'active' }, cfg); if (k === 'moto') writeMoto(window.TEYA_PRODUCTS.moto); };
   if (!window.teyaUpdateProductConfig) window.teyaUpdateProductConfig = function (k, cfg) { window.TEYA_PRODUCTS[k] = Object.assign({}, window.TEYA_PRODUCTS[k], cfg); if (k === 'moto') writeMoto(window.TEYA_PRODUCTS.moto); };
   if (!window.teyaToast) {
@@ -834,27 +859,95 @@
   if (!page) return;
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
-  function activeTerminals() { return window.TEYA_TERMINALS.filter(function (t) { return t.status === 'active'; }); }
+  function stores() { return window.TEYA_STORES || []; }
+  function storeById(id) { return stores().find(function (s) { return s.id === id; }); }
+  function isMultiStore() { return stores().length > 1; }
+  var SEARCH_THRESHOLD = 6;
 
-  function buildTerminalListHTML(currentIds, attr) {
-    var terminals = activeTerminals();
-    if (terminals.length === 0) return '<div class="moto-enabled-empty">You need at least one active terminal to use MOTO.</div>';
-    var byStore = {};
-    terminals.forEach(function (t) { (byStore[t.storeId] = byStore[t.storeId] || []).push(t); });
-    return Object.keys(byStore).map(function (sid) {
-      var rows = byStore[sid].map(function (t) {
-        var checked = currentIds.indexOf(t.id) >= 0 ? 'checked' : '';
-        return '<label class="moto-terminal-item"><input type="checkbox" ' + attr + '="' + esc(t.id) + '" ' + checked + ' />' +
-          '<div><div class="moto-terminal-item-name">' + esc(t.name) + '</div>' +
-          '<div class="moto-terminal-item-meta">' + esc(t.model) + '</div></div></label>';
-      }).join('');
-      return '<div class="moto-store-group"><div class="moto-store-label">' + esc(window.teyaGetStoreName(sid)) + '</div><div class="moto-terminal-list">' + rows + '</div></div>';
-    }).join('');
+  function storeIconSVG() {
+    return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 9l1.5-5h15L21 9M4 9v10a1 1 0 001 1h14a1 1 0 001-1V9M3 9h18"/></svg>';
   }
-  function terminalSummary(ids) {
-    if (!ids || !ids.length) return '—';
-    var names = ids.map(function (id) { var t = window.TEYA_TERMINALS.find(function (x) { return x.id === id; }); return t ? t.name : id; });
-    return names.length + ' terminal' + (names.length === 1 ? '' : 's') + ' · ' + names.join(', ');
+  function stateBadge(state) {
+    var map = { pending: ['pending', 'Pending'], active: ['active', 'Active'], declined: ['declined', 'Declined'] };
+    var m = map[state] || map.pending;
+    return '<span class="store-badge store-badge--' + m[0] + '">' + m[1] + '</span>';
+  }
+
+  /* Reusable store selector — checkbox list (<6 stores) or search-first (6+). */
+  function makeStoreSelector(opts) {
+    var mount = opts.mount;
+    var parent = mount.parentNode;
+    if (parent) { var fresh = mount.cloneNode(false); parent.replaceChild(fresh, mount); mount = fresh; }
+    var available = opts.available;
+    var selected = {};
+    (opts.preselected || []).forEach(function (id) { selected[id] = true; });
+    var searchTier = available.length >= SEARCH_THRESHOLD;
+    var query = '';
+
+    function selectedIds() { return Object.keys(selected).filter(function (id) { return selected[id]; }); }
+    function emit() { if (opts.onChange) opts.onChange(selectedIds()); }
+
+    function rowHTML(s) {
+      var inelig = !s.eligible;
+      var checked = selected[s.id] ? 'checked' : '';
+      var meta = inelig ? esc(s.reason || 'Not eligible') : esc(s.city || '');
+      var badge = inelig
+        ? '<span class="store-badge store-badge--ineligible">Not eligible</span>'
+        : '<span class="store-badge store-badge--eligible">Eligible</span>';
+      return '<label class="store-row' + (inelig ? ' store-row--ineligible' : '') + '">' +
+        '<input type="checkbox" data-store="' + esc(s.id) + '" ' + checked + (inelig ? ' disabled' : '') + ' />' +
+        '<div class="store-row-info"><div class="store-row-name">' + esc(s.name) + '</div><div class="store-row-meta">' + meta + '</div></div>' +
+        badge + '</label>';
+    }
+    function renderChips() {
+      var chipsEl = mount.querySelector('.store-chips'); if (!chipsEl) return;
+      var ids = selectedIds();
+      chipsEl.innerHTML = ids.map(function (id) { var s = storeById(id); return '<span class="store-chip">' + esc(s ? s.name : id) + '<button type="button" data-chip="' + esc(id) + '" aria-label="Remove">×</button></span>'; }).join('');
+      chipsEl.hidden = ids.length === 0;
+    }
+    function renderList() {
+      var listEl = mount.querySelector('.store-list');
+      var rows = available.filter(function (s) {
+        if (!searchTier || !query) return true;
+        var q = query.toLowerCase();
+        return s.name.toLowerCase().indexOf(q) >= 0 || (s.city || '').toLowerCase().indexOf(q) >= 0;
+      });
+      listEl.innerHTML = rows.length ? rows.map(rowHTML).join('') : '<div class="store-empty">No stores match your search.</div>';
+    }
+
+    var html = '';
+    if (searchTier) {
+      html += '<div class="store-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" placeholder="Search stores by name or city" /></div>';
+      html += '<div class="store-chips" hidden></div>';
+    }
+    html += '<div class="store-list' + (searchTier ? ' store-list--scroll' : '') + '"></div>';
+    mount.innerHTML = html;
+    renderList(); renderChips();
+
+    mount.addEventListener('change', function (e) {
+      if (e.target.matches('[data-store]')) { selected[e.target.dataset.store] = e.target.checked; renderChips(); emit(); }
+    });
+    mount.addEventListener('click', function (e) {
+      var chip = e.target.closest('[data-chip]');
+      if (chip) { selected[chip.dataset.chip] = false; renderList(); renderChips(); emit(); }
+    });
+    if (searchTier) {
+      mount.querySelector('.store-search input').addEventListener('input', function (e) { query = e.target.value; renderList(); });
+    }
+    emit();
+    return { getSelected: selectedIds };
+  }
+
+  function renderStoreStateList(el, list) {
+    if (!el) return;
+    if (!list || !list.length) { el.innerHTML = '<div class="store-empty">No stores yet.</div>'; return; }
+    el.innerHTML = list.map(function (item) {
+      var s = storeById(item.id) || { name: item.id, city: '' };
+      var meta = (item.state === 'declined' && item.reason) ? esc(item.reason) : esc(s.city || '');
+      return '<div class="store-line"><span class="store-line-icon">' + storeIconSVG() + '</span>' +
+        '<div class="store-line-info"><div class="store-line-name">' + esc(s.name) + '</div><div class="store-line-meta">' + meta + '</div></div>' +
+        stateBadge(item.state) + '</div>';
+    }).join('');
   }
 
   function statusOf() {
@@ -863,7 +956,7 @@
   }
 
   function render() {
-    var product = window.TEYA_PRODUCTS.moto || { status: 'none', enabledTerminals: [] };
+    var product = window.TEYA_PRODUCTS.moto || { status: 'none', stores: [] };
     var status = statusOf();
     document.getElementById('motoInfo').hidden = status !== 'none';
     document.getElementById('motoPending').hidden = status !== 'pending';
@@ -871,28 +964,16 @@
 
     if (status === 'pending') {
       document.getElementById('motoReqDate').textContent = product.requestedAt || 'Today';
-      document.getElementById('motoReqTerminals').textContent = terminalSummary(product.enabledTerminals || []);
-      document.getElementById('motoReqFile').textContent = product.fileName || '—';
+      document.getElementById('motoReqFile').textContent = product.fileName || 'Not required';
+      renderStoreStateList(document.getElementById('motoPendingStores'), product.stores || []);
       return;
     }
     if (status !== 'active') return;
 
-    var enabled = product.enabledTerminals || [];
-    document.getElementById('motoStatusText').textContent = 'MOTO is active on ' + enabled.length + ' terminal' + (enabled.length === 1 ? '' : 's');
-    var listEl = document.getElementById('motoEnabledList');
-    if (enabled.length === 0) {
-      listEl.innerHTML = '<div class="moto-enabled-empty">No terminals have MOTO enabled yet. Use "Edit terminals" to add some.</div>';
-      return;
-    }
-    var terminals = enabled.map(function (id) { return window.TEYA_TERMINALS.find(function (t) { return t.id === id; }); }).filter(Boolean);
-    listEl.innerHTML = terminals.map(function (t) {
-      return '<div class="moto-enabled-item">' +
-        '<span class="cm-name-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="12" cy="19" r="1" fill="currentColor"/><rect x="7" y="6" width="10" height="6" rx="1"/></svg></span>' +
-        '<div><div class="moto-enabled-item-name">' + esc(t.name) + '</div>' +
-        '<div class="moto-enabled-item-meta">' + esc(window.teyaGetStoreName(t.storeId)) + ' · ' + esc(t.model) + '</div></div>' +
-        '<span class="moto-enabled-item-right"><span class="dot"></span>On</span>' +
-      '</div>';
-    }).join('');
+    var sts = product.stores || [];
+    var activeCount = sts.filter(function (s) { return s.state === 'active'; }).length;
+    document.getElementById('motoStatusText').textContent = 'MOTO is active on ' + activeCount + ' store' + (activeCount === 1 ? '' : 's');
+    renderStoreStateList(document.getElementById('motoActiveStores'), sts);
   }
 
   function todayStr() {
@@ -900,115 +981,107 @@
     catch (e) { return 'Today'; }
   }
 
-  /* ===== Request modal (terminals + transaction history) ===== */
+  /* ===== Request modal (stores + transaction history) ===== */
   var reqModal = document.getElementById('motoRequestModal');
-  var reqList = document.getElementById('motoReqTerminalList');
-  var fileInput = document.getElementById('motoFileInput');
-  var fileChip = document.getElementById('motoFileChip');
-  var fileNameEl = document.getElementById('motoFileName');
+  var reqStoreField = document.getElementById('motoReqStoreField');
+  var fileListEl = document.getElementById('motoFileList');
   var submitBtn = document.getElementById('motoSubmitRequest');
-  var uploadedName = '';
+  var uploadedFiles = [];
+  var reqSelected = [];
+  var REQUIRES_DOCS = !(window.TEYA_MERCHANT && window.TEYA_MERCHANT.monthsWithTeya >= 6);
 
-  function reqSelectedIds() {
-    return Array.prototype.slice.call(reqModal.querySelectorAll('[data-moto-req-terminal]:checked')).map(function (c) { return c.dataset.motoReqTerminal; });
-  }
-  function updateReqCount() {
-    var n = reqSelectedIds().length;
-    var all = reqModal.querySelectorAll('[data-moto-req-terminal]').length;
-    document.getElementById('motoReqSelectedCount').textContent = n + ' selected';
-    document.getElementById('motoReqSelectAll').textContent = (n === all && all > 0) ? 'Clear all' : 'Select all';
+  function fileSummary() { return uploadedFiles.length === 1 ? uploadedFiles[0] : (uploadedFiles.length + ' files'); }
+  function renderFileList() {
+    fileListEl.innerHTML = uploadedFiles.map(function (name, i) {
+      return '<div class="mf-file">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+        '<span class="mf-file-name">' + esc(name) + '</span>' +
+        '<button type="button" class="mf-file-remove" data-file="' + i + '" aria-label="Remove file"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>' +
+      '</div>';
+    }).join('');
   }
   function validateRequest() {
-    submitBtn.disabled = !(reqSelectedIds().length > 0 && uploadedName);
+    var storesOk = !isMultiStore() || reqSelected.length > 0;
+    var docsOk = !REQUIRES_DOCS || uploadedFiles.length > 0;
+    submitBtn.disabled = !(storesOk && docsOk);
   }
   function openRequest() {
-    reqList.innerHTML = buildTerminalListHTML([], 'data-moto-req-terminal');
-    uploadedName = ''; fileInput.value = ''; fileChip.hidden = true; fileNameEl.textContent = '';
-    updateReqCount(); validateRequest();
+    if (isMultiStore()) {
+      reqStoreField.hidden = false;
+      makeStoreSelector({ mount: document.getElementById('motoReqStores'), available: stores(), preselected: [], onChange: function (ids) { reqSelected = ids; validateRequest(); } });
+    } else {
+      reqStoreField.hidden = true;
+      reqSelected = stores().map(function (s) { return s.id; });
+    }
+    document.getElementById('motoDocsField').hidden = !REQUIRES_DOCS;
+    document.getElementById('motoDocsExempt').hidden = REQUIRES_DOCS;
+    document.getElementById('motoWarningText').textContent = REQUIRES_DOCS
+      ? "MOTO is subject to review and approval. We'll be in touch once your documents have been assessed."
+      : "MOTO is subject to review and approval. We'll be in touch once your request has been reviewed.";
+    uploadedFiles = []; renderFileList();
+    validateRequest();
     requestAnimationFrame(function () { reqModal.classList.add('open'); });
     document.body.style.overflow = 'hidden';
   }
-  reqModal.addEventListener('change', function (e) { if (e.target.matches('[data-moto-req-terminal]')) { updateReqCount(); validateRequest(); } });
-  document.getElementById('motoReqSelectAll').addEventListener('click', function () {
-    var boxes = reqModal.querySelectorAll('[data-moto-req-terminal]');
-    var allOn = reqSelectedIds().length === boxes.length;
-    boxes.forEach(function (b) { b.checked = !allOn; });
-    updateReqCount(); validateRequest();
+  document.getElementById('motoUploadBtn').addEventListener('click', function () {
+    /* Prototype: auto-attach a sample file instead of opening the OS file picker. */
+    var n = uploadedFiles.length;
+    uploadedFiles.push(n === 0 ? 'acquirer-statement.pdf' : ('acquirer-statement-' + (n + 1) + '.pdf'));
+    renderFileList(); validateRequest();
   });
-  document.getElementById('motoUploadBtn').addEventListener('click', function () { fileInput.click(); });
-  fileInput.addEventListener('change', function () {
-    if (fileInput.files && fileInput.files[0]) {
-      uploadedName = fileInput.files[0].name;
-      fileNameEl.textContent = uploadedName; fileChip.hidden = false;
-    }
-    validateRequest();
-  });
-  document.getElementById('motoFileRemove').addEventListener('click', function () {
-    uploadedName = ''; fileInput.value = ''; fileChip.hidden = true; fileNameEl.textContent = '';
-    validateRequest();
+  fileListEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-file]');
+    if (btn) { uploadedFiles.splice(parseInt(btn.dataset.file, 10), 1); renderFileList(); validateRequest(); }
   });
   submitBtn.addEventListener('click', function () {
-    var ids = reqSelectedIds();
-    window.teyaUpdateProductConfig('moto', { status: 'pending', active: false, fileName: uploadedName, requestedAt: todayStr(), enabledTerminals: ids });
+    var sts = reqSelected.map(function (id) { return { id: id, state: 'pending' }; });
+    window.teyaUpdateProductConfig('moto', { status: 'pending', active: false, fileName: REQUIRES_DOCS ? fileSummary() : '', requestedAt: todayStr(), stores: sts });
     closeModals();
-    window.teyaToast({ title: 'Request submitted', body: "We'll review it within 3 working days and email you the decision." });
+    window.teyaToast({ title: 'Request submitted', body: "We'll be in touch once your documents have been assessed." });
     render();
   });
 
-  /* ===== Terminals modal (after approval) ===== */
-  var termsModal = document.getElementById('motoTermsModal');
-  function updateCount() {
-    var n = termsModal.querySelectorAll('[data-moto-terminal]:checked').length;
-    document.getElementById('motoSelectedCount').textContent = n + ' selected';
-    var all = termsModal.querySelectorAll('[data-moto-terminal]').length;
-    document.getElementById('motoSelectAll').textContent = (n === all && all > 0) ? 'Clear all' : 'Select all';
-  }
-  function openTerms() {
-    var terminals = activeTerminals();
-    var current = (window.TEYA_PRODUCTS.moto && window.TEYA_PRODUCTS.moto.enabledTerminals) || [];
-    var listEl = document.getElementById('motoTerminalList');
-    if (terminals.length === 0) {
-      listEl.innerHTML = '<div class="moto-enabled-empty">You need at least one active terminal to use MOTO.</div>';
+  /* ===== Add-a-store modal (after approval) ===== */
+  var addModal = document.getElementById('motoAddStoreModal');
+  var addConfirm = document.getElementById('motoAddConfirm');
+  var addSelected = [];
+  function openAddStore() {
+    var existing = (window.TEYA_PRODUCTS.moto.stores || []).map(function (s) { return s.id; });
+    var available = stores().filter(function (s) { return existing.indexOf(s.id) < 0; });
+    var emptyEl = document.getElementById('motoAddEmpty');
+    var mountEl = document.getElementById('motoAddStores');
+    addSelected = [];
+    if (available.length === 0) {
+      mountEl.hidden = true; emptyEl.hidden = false;
+      addConfirm.disabled = true; addConfirm.textContent = 'Add stores';
     } else {
-      var byStore = {};
-      terminals.forEach(function (t) { (byStore[t.storeId] = byStore[t.storeId] || []).push(t); });
-      listEl.innerHTML = Object.keys(byStore).map(function (sid) {
-        var rows = byStore[sid].map(function (t) {
-          var checked = current.indexOf(t.id) >= 0 ? 'checked' : '';
-          return '<label class="moto-terminal-item"><input type="checkbox" data-moto-terminal="' + esc(t.id) + '" ' + checked + ' />' +
-            '<div><div class="moto-terminal-item-name">' + esc(t.name) + '</div>' +
-            '<div class="moto-terminal-item-meta">' + esc(t.model) + '</div></div></label>';
-        }).join('');
-        return '<div class="moto-store-group"><div class="moto-store-label">' + esc(window.teyaGetStoreName(sid)) + '</div><div class="moto-terminal-list">' + rows + '</div></div>';
-      }).join('');
+      mountEl.hidden = false; emptyEl.hidden = true;
+      makeStoreSelector({ mount: mountEl, available: available, preselected: [], onChange: function (ids) {
+        addSelected = ids;
+        addConfirm.textContent = ids.length ? ('Add ' + ids.length + ' store' + (ids.length === 1 ? '' : 's')) : 'Add stores';
+        addConfirm.disabled = ids.length === 0;
+      } });
     }
-    requestAnimationFrame(function () { termsModal.classList.add('open'); });
+    requestAnimationFrame(function () { addModal.classList.add('open'); });
     document.body.style.overflow = 'hidden';
-    updateCount();
   }
-  document.getElementById('motoEditTerminalsBtn').addEventListener('click', openTerms);
-  document.getElementById('motoEditFromMenu').addEventListener('click', function () { closeMenus(); openTerms(); });
-  document.getElementById('motoSelectAll').addEventListener('click', function () {
-    var boxes = termsModal.querySelectorAll('[data-moto-terminal]');
-    var allOn = termsModal.querySelectorAll('[data-moto-terminal]:checked').length === boxes.length;
-    boxes.forEach(function (b) { b.checked = !allOn; });
-    updateCount();
-  });
-  termsModal.addEventListener('change', function (e) { if (e.target.matches('[data-moto-terminal]')) updateCount(); });
-  document.getElementById('motoSaveTerms').addEventListener('click', function () {
-    var ids = Array.prototype.slice.call(termsModal.querySelectorAll('[data-moto-terminal]:checked')).map(function (c) { return c.dataset.motoTerminal; });
-    window.teyaUpdateProductConfig('moto', { enabledTerminals: ids });
+  document.getElementById('motoAddStoreBtn').addEventListener('click', openAddStore);
+  document.getElementById('motoAddFromMenu').addEventListener('click', function () { closeMenus(); openAddStore(); });
+  addConfirm.addEventListener('click', function () {
+    var cur = (window.TEYA_PRODUCTS.moto.stores || []).slice();
+    addSelected.forEach(function (id) { cur.push({ id: id, state: 'pending' }); });
+    window.teyaUpdateProductConfig('moto', { stores: cur });
     closeModals();
-    window.teyaToast({ title: 'Terminals updated', body: ids.length + ' terminal' + (ids.length === 1 ? '' : 's') + ' now accept MOTO.' });
+    window.teyaToast({ title: 'Stores added', body: addSelected.length + ' store' + (addSelected.length === 1 ? '' : 's') + ' sent for review.' });
     render();
   });
 
   /* ===== shared modal close ===== */
   function closeModals() {
-    reqModal.classList.remove('open'); termsModal.classList.remove('open');
+    reqModal.classList.remove('open'); addModal.classList.remove('open');
     document.body.style.overflow = '';
   }
-  [reqModal, termsModal].forEach(function (m) {
+  [reqModal, addModal].forEach(function (m) {
     m.addEventListener('click', function (e) {
       if (e.target.closest('[data-moto-close]')) return closeModals();
       if (e.target === m) return closeModals();
@@ -1028,20 +1101,27 @@
 
   document.getElementById('motoDeactivate').addEventListener('click', function () {
     closeMenus();
-    window.teyaUpdateProductConfig('moto', { status: 'none', active: false, enabledTerminals: [], useCase: '', fileName: '', requestedAt: '' });
+    window.teyaUpdateProductConfig('moto', { status: 'none', active: false, stores: [], fileName: '', requestedAt: '' });
     window.teyaToast({ title: 'MOTO turned off', body: "Phone payments are switched off. You'll need to request MOTO again to switch it back on." });
     render();
   });
   document.getElementById('motoCancelRequest').addEventListener('click', function () {
     closeMenus();
-    window.teyaUpdateProductConfig('moto', { status: 'none', active: false, enabledTerminals: [], useCase: '', fileName: '', requestedAt: '' });
+    window.teyaUpdateProductConfig('moto', { status: 'none', active: false, stores: [], fileName: '', requestedAt: '' });
     window.teyaToast({ title: 'Request cancelled', body: 'Your MOTO request has been withdrawn.' });
     render();
   });
   document.getElementById('motoSimApprove').addEventListener('click', function () {
-    var current = (window.TEYA_PRODUCTS.moto && window.TEYA_PRODUCTS.moto.enabledTerminals) || [];
-    window.teyaActivateProduct('moto', { enabledTerminals: current });
-    window.teyaToast({ title: 'MOTO approved', body: 'MOTO is now active on your selected terminal' + (current.length === 1 ? '' : 's') + '.' });
+    var sts = (window.TEYA_PRODUCTS.moto.stores || []).slice();
+    var pendingIdx = [];
+    sts.forEach(function (s, i) { if (s.state === 'pending') pendingIdx.push(i); });
+    pendingIdx.forEach(function (i, k) {
+      if (pendingIdx.length >= 2 && k === pendingIdx.length - 1) sts[i] = { id: sts[i].id, state: 'declined', reason: "Didn't meet our review criteria" };
+      else sts[i] = { id: sts[i].id, state: 'active' };
+    });
+    window.teyaUpdateProductConfig('moto', { status: 'active', active: true, stores: sts });
+    var approved = sts.filter(function (s) { return s.state === 'active'; }).length;
+    window.teyaToast({ title: 'Decision made', body: 'MOTO approved for ' + approved + ' store' + (approved === 1 ? '' : 's') + '.' });
     render();
   });
 
@@ -1063,18 +1143,18 @@
     var sub = document.getElementById('ppMotoSub');
     if (!badge) return;
     if (status === 'active') {
-      var n = (m.enabledTerminals || []).length;
+      var n = (m.stores || []).filter(function (s) { return s.state === 'active'; }).length;
       badge.className = 'pp-product-badge pp-product-badge--active';
       badge.textContent = 'Active';
-      sub.textContent = n > 0 ? ('On ' + n + ' terminal' + (n === 1 ? '' : 's')) : 'Take card payments over the phone';
+      sub.textContent = n > 0 ? ('On ' + n + ' store' + (n === 1 ? '' : 's')) : 'Key in card details on your terminal';
     } else if (status === 'pending') {
       badge.className = 'pp-product-badge pp-product-badge--pending';
-      badge.textContent = 'Pending';
-      sub.textContent = 'Request under review';
+      badge.textContent = 'Pending review';
+      sub.textContent = 'Key in card details on your terminal';
     } else {
       badge.className = 'pp-product-badge pp-product-badge--inactive';
       badge.textContent = 'Inactive';
-      sub.textContent = 'Take card payments over the phone';
+      sub.textContent = 'Key in card details on your terminal';
     }
   }
 
